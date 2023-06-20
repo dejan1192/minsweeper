@@ -13,7 +13,7 @@ void create_grid();
 #define RECT_SIZE 40
 #define SCREEN_W 800
 #define SCREEN_H 600
-#define MINE_PERCENT 10
+#define MINE_PERCENT 14
 
 #define COLOR 0x7497a8
 
@@ -47,7 +47,7 @@ int main() {
 
     InitWindow(800, 600, "Minesweeper V01");
     Image image = LoadImage("flag.png");
-    Texture2D flag = LoadTextureFromImage(image);
+    flag = LoadTextureFromImage(image);
     UnloadImage(image);
     create_grid();
     SetTargetFPS(60);
@@ -59,25 +59,27 @@ int main() {
     while(!WindowShouldClose()) {
         BeginDrawing();
         ClearBackground(RAYWHITE);
-        draw_grid();
 
-        if(game_status == PLAY) {
-            handle_events();
-        }else if(game_status == WON) {
-            DrawRectangle(0, 0, SCREEN_W, SCREEN_H, Fade(BLACK, 0.8f));
-            DrawText(wonText, SCREEN_W / 2 - MeasureText(wonText,20) /2, SCREEN_H  /2- MeasureText(wonText,20)/2, 20, LIGHTGRAY);
-            if(IsKeyPressed(KEY_R)) {
-                create_grid();
-            }
-        }else if(game_status == LOST) {
-            DrawRectangle(0, 0, SCREEN_W, SCREEN_H, Fade(BLACK, 0.8f));
-            DrawText(lostText, SCREEN_W / 2 - MeasureText(lostText,20) /2, SCREEN_H  /2- MeasureText(lostText,20)/2, 20, LIGHTGRAY);
-            
-            if(IsKeyPressed(KEY_R)) {
-                create_grid();
+        switch(game_status){
+            case PLAY:
+                handle_events();
+                draw_grid();
+                break;
+            case WON:
+                DrawRectangle(0, 0, SCREEN_W, SCREEN_H, Fade(BLACK, 0.8f));
+                DrawText(wonText, SCREEN_W / 2 - MeasureText(wonText,20) /2, SCREEN_H  /2- MeasureText(wonText,20)/2, 20, LIGHTGRAY);
+                    break;
+                if(IsKeyPressed(KEY_R)) {
+                    create_grid();
+                }
+            case LOST:
+                DrawRectangle(0, 0, SCREEN_W, SCREEN_H, Fade(BLACK, 0.8f));
+                DrawText(lostText, SCREEN_W / 2 - MeasureText(lostText,20) /2, SCREEN_H  /2- MeasureText(lostText,20)/2, 20, LIGHTGRAY);
+                if(IsKeyPressed(KEY_R)) {
+                    create_grid();
 
-            }
-
+                }
+                break;
         }
         EndDrawing();
     }
@@ -161,7 +163,7 @@ void draw_grid(){
                         DrawText(TextFormat("%d", num_of_mines), i * ROWS+15, j * COLS+10, 20, BLACK);
                 }
             }else if(grid[i][j].flagged) {
-                DrawTexture(flag, grid[i][j].rec.x , grid[i][j].rec.y, RED);
+                DrawTexture(flag, grid[i][j].rec.x , grid[i][j].rec.y, WHITE);
                 //DrawRectangleRec(grid[i][j].rec, BLUE);
             }else{
                 won = false;
