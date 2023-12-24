@@ -43,6 +43,7 @@ typedef struct GameRec {
 typedef struct {
     GameStatus status;
     GameRec grid[SCREEN_W / ROWS][SCREEN_H / COLS];
+    int maxFlags;
     int currentFrame;
     int currentLine;
     Vector2 position;
