@@ -5,6 +5,7 @@
 #include "game.h"
 
 #define COLOR 0x7497a8
+#define MAX_SQUARES_REVEALED 10
 
 // extract the red component
 int r = (COLOR >> 16) & 0xFF;
@@ -36,7 +37,7 @@ void flood_fill(Game* game, int r, int c, int curr_size){
     if(
         (r < 0 || r >= len || c < 0 || c>= len) // out of bounds
         || game->grid[r][c].visited// already visited
-        || curr_size == 10 // max amount of cells to visit
+        || curr_size == MAX_SQUARES_REVEALED // max amount of cells to visit
     ){
         return;
     }
