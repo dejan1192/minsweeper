@@ -38,7 +38,7 @@ int main() {
     GameStatus status = PLAY;
     game.status = status;
     
-    explosion = LoadTexture("explosion.png");
+    explosion = LoadTexture("assets/explosion.png");
     game.frameWidth = (float) ((float)explosion.width / NUM_FRAMES_PER_LINE);
     game.frameHeight = (float) ((float)explosion.height / NUM_LINES);
     game.frameRec = (Rectangle) {0,0,game.frameWidth,game.frameHeight};
