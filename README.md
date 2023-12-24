@@ -2,7 +2,7 @@
 
 Simple minesweeper learning project.
 
-<img src="./assets/2023-12-24-210350_802x603_scrot.png" width="400" alt="Minesweeper Image 1">
+<img src="./assets/2023-12-25-004146_801x606_scrot.png" width="400" alt="Minesweeper Image 3">
 <img src="./assets/2023-12-24-212406_798x607_scrot.png" width="400" alt="Minesweeper Image 2">
 
 
