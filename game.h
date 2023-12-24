@@ -37,6 +37,7 @@ typedef struct GameRec {
     bool neutralized;
     bool hover;
     bool active;
+    bool visited;
 } GameRec;
 
 typedef struct {

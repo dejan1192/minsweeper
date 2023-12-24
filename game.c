@@ -29,6 +29,29 @@ void executeRightClick(){
     TraceLog(LOG_INFO,"Right Click \n");
 }
 
+void flood_fill(Game* game, int r, int c, int curr_size){
+
+    int len = sizeof(game->grid) / sizeof(game->grid[0]);
+
+    if(
+        (r < 0 || r >= len || c < 0 || c>= len) // out of bounds
+        || game->grid[r][c].visited// already visited
+        || curr_size == 10 // max amount of cells to visit
+    ){
+        return;
+    }
+    game->grid[r][c].visited = true;
+
+    if( !game->grid[r][c].has_mine )
+        game->grid[r][c].active = true;
+    curr_size++;
+    
+    // recursiv call flood_fill for all 4 adjacent cells
+    flood_fill(game, r, c + 1, curr_size);
+    flood_fill(game, r, c - 1, curr_size);
+    flood_fill(game, r + 1, c, curr_size);
+    flood_fill(game, r - 1, c, curr_size);
+}
 
 int main() {
 
@@ -211,8 +234,9 @@ void draw_grid(Game* game){
                 }else{
                     int num_of_mines = check_surrounding(game, i, j);
                     if(num_of_mines == 0 && game->grid[i][j].active == true ){
-                        // TraceLog(LOG_INFO,"State active %d -> %d \n", i, j);
-                        reveal(game, i,j);
+                          //      reveal(game, i,j);
+                        // reveal up to 10 squares
+                        flood_fill(game, i, j, 0);
                     }
                     
                     DrawRectangleRec(game->grid[i][j].rec, ColorFromHSV(r-10,g-10,b-10));
@@ -276,7 +300,8 @@ void create_grid(Game* game){
                 .rec = rect,
                 .neutralized = false,
                 .active = false, 
-                .flagged = false
+                .flagged = false,
+                .visited = false
             };
             
             if (GetRandomValue(0, 100) < 10) {
