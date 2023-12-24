@@ -41,7 +41,7 @@ void flood_fill(Game* game, int r, int c, int curr_size){
         game->grid[r][c].active = true;
 
     curr_size++;
-    
+
     // recursiv call flood_fill for all 4 adjacent cells
     flood_fill(game, r, c + 1, curr_size);
     flood_fill(game, r, c - 1, curr_size);
@@ -57,7 +57,7 @@ int main() {
     Game game = {0};
     GameStatus status = PLAY;
     game.status = status;
-    
+
     Image image = LoadImage("assets/flag.png");
 
     flag = LoadTextureFromImage(image);
@@ -71,7 +71,7 @@ int main() {
     CommandFunction leftClick = executeLeftClick;
     CommandFunction rightClick = executeRightClick;
 
-     game.framesCounter = 0;
+    game.framesCounter = 0;
 
     while(!WindowShouldClose()) {
         BeginDrawing();
@@ -136,7 +136,7 @@ void handle_events(Game* game) {
             return;
         }
         game->grid[r][c].flagged = !game->grid[r][c].flagged;
-        
+
         if(game->grid[r][c].flagged){
             game->maxFlags--;
         }else{
@@ -180,13 +180,13 @@ void draw_grid(Game* game){
                         // reveal up to 10 squares
                         flood_fill(game, i, j, 0);
                     }
-                    
+
                     DrawRectangleRec(game->grid[i][j].rec, ColorFromHSV(r-10,g-10,b-10));
                     if(num_of_mines > 0)
                         DrawText(TextFormat("%d", num_of_mines), i * ROWS+15, j * COLS+10, 20, BLACK);
                 }
             }else if(game->grid[i][j].flagged) {
-                 float centerX = game->grid[i][j].rec.x + game->grid[i][j].rec.width / 2;
+                float centerX = game->grid[i][j].rec.x + game->grid[i][j].rec.width / 2;
                 float centerY = game->grid[i][j].rec.y + game->grid[i][j].rec.height / 2;
 
                 // Calculate position to start drawing the flag
@@ -194,14 +194,10 @@ void draw_grid(Game* game){
                 float flagX = centerX - (float)flag.width / 2;
                 float flagY = centerY - (float)flag.height / 2;
 
-                // Draw the flag texture centered in the cell
-                 DrawRectangleRec(game->grid[i][j].rec, Fade(BLUE, 0.3f));
+                DrawRectangleRec(game->grid[i][j].rec, Fade(BLUE, 0.3f));
                 DrawTexture(flag, flagX, flagY, WHITE);
-                //DrawRectangleRec(game->grid[i][j].rec, BLUE);
-                 //DrawTextureRec(flag, game->frameRec, game->position, WHITE);
-              //DrawTexture(flag, game->grid[i][j].rec.x, game->grid[i][j].rec.y, WHITE);
             }else if(game->grid[i][j].neutralized) {
-                 DrawRectangleRec(game->grid[i][j].rec, Fade(RED, 0.3f));
+                DrawRectangleRec(game->grid[i][j].rec, Fade(RED, 0.3f));
                 //DrawRectangleRec(game->grid[i][j].rec, DARKGRAY);
             }else if(game->grid[i][j].hover) {
                 DrawRectangleRec(game->grid[i][j].rec, Fade(GREEN, 0.3f));
@@ -237,15 +233,15 @@ void create_grid(Game* game){
                 .flagged = false,
                 .visited = false
             };
-            
+
             if (GetRandomValue(0, 100) < 10) {
                 gr.has_mine = true;
 
                 game->maxFlags++;
             }
             game->grid[i][j] = gr;
- //           if(gr.has_mine)
-//                game->grid[i][j].neutralized = true;
+            //           if(gr.has_mine)
+            //                game->grid[i][j].neutralized = true;
 
         }
     }
