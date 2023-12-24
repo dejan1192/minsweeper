@@ -10,7 +10,6 @@
 #define SCREEN_H 600
 #define MINE_PERCENT 15
 
-#define COLOR 0x7497a8
 
 #define NUM_FRAMES_PER_LINE 5
 #define NUM_LINES 5
@@ -40,12 +39,24 @@ typedef struct GameRec {
     bool active;
 } GameRec;
 
-void draw_grid();
-void handle_events();
-void create_grid();
-void selection(int i, int j);
-void neutralize(int i, int j);
-void reset();
+typedef struct {
+    GameStatus status;
+    GameRec grid[SCREEN_W / ROWS][SCREEN_H / COLS];
+    int currentFrame;
+    int currentLine;
+    Vector2 position;
+    int framesCounter;
+    float frameWidth;
+    float frameHeight;
+    Rectangle frameRec;
+} Game;
+
+void draw_grid(Game* game);
+void handle_events(Game* game);
+void create_grid(Game* game);
+void selection(Game* game, int i, int j);
+void neutralize(Game* game, int i, int j);
+void reset(Game* game);
 
 
 
