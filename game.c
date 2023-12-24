@@ -2,26 +2,8 @@
 #include "stdlib.h"
 #include "raylib.h"
 #include "math.h"
+#include "game.h"
 
-
-void draw_grid();
-void handle_events();
-void create_grid();
-void selection(int i, int j);
-void neutralize(int i, int j);
-void reset();
-
-#define ROWS  40
-#define COLS  40
-#define RECT_SIZE 40
-#define SCREEN_W 800
-#define SCREEN_H 600
-#define MINE_PERCENT 15
-
-#define COLOR 0x7497a8
-
-#define NUM_FRAMES_PER_LINE 5;
-#define NUM_LINES 5
 
 // extract the red component
 int r = (COLOR >> 16) & 0xFF;
@@ -31,30 +13,15 @@ int g = (COLOR >> 8) & 0xFF;
 // and then  bitwise AND with 0xFF to get the blue component
 int b = COLOR & 0xFF;
 
-typedef enum GameStatus {
-    PLAY,
-    WON,
-    LOST,
-    SELECTION,
-} GameStatus;
-
-typedef void (*CommandFunction)(void);
-
-typedef struct Command {
-    CommandFunction func;
-} Command;
-
-
-
-typedef struct GameRec {
-    Rectangle rec;
-    bool has_mine;
-    bool flagged;
-    bool neutralized;
-    bool hover;
-    bool active;
-} GameRec;
 GameStatus game_status;
+Texture2D explosion;
+int currentFrame = 0;
+int currentLine = 0;
+Vector2 position = {0.0f, 0.0f};
+int framesCounter = 0;
+float frameWidth;
+float frameHeight;
+Rectangle frameRec = {0,0,0,0};
 
 GameRec grid[SCREEN_W / ROWS][SCREEN_H / COLS];
 Texture2D flag;
@@ -66,43 +33,34 @@ void executeLeftClick(){
 void executeRightClick(){
     TraceLog(LOG_INFO,"Right Click \n");
 }
-Texture2D explosion;
-#define NUM_FRAMES_PER_LINE 5
-#define NUM_LINES 5
-int currentFrame = 0;
-int currentLine = 0;
-Vector2 position = {0.0f, 0.0f};
-int framesCounter = 0;
-float frameWidth;
-float frameHeight;
-Rectangle frameRec = {0,0,0,0};
+
 bool explosionActive = false;
+
 int main() {
 
 
     InitWindow(800, 600, "Minesweeper V01");
-
     
     explosion = LoadTexture("explosion.png");
-    frameWidth = (float) (explosion.width / NUM_FRAMES_PER_LINE);
-    frameHeight = (float) (explosion.height / NUM_LINES);
+    frameWidth = (float) ((float)explosion.width / NUM_FRAMES_PER_LINE);
+    frameHeight = (float) ((float)explosion.height / NUM_LINES);
     frameRec = (Rectangle) {0,0,frameWidth,frameHeight};
 
 
     Image image = LoadImage("flag.png");
+
     flag = LoadTextureFromImage(image);
     UnloadImage(image);
     create_grid();
     SetTargetFPS(60);
-    char lostText[] = "You Lost, Press R to Restart";
-    char wonText[] = "You Won! Press R to Restart";
+
+    char* lostText = "You Lost, Press R to Restart";
+    char* wonText = "You Won! Press R to Restart";
 
     CommandFunction leftClick = executeLeftClick;
     CommandFunction rightClick = executeRightClick;
 
      framesCounter = 0;
-
-
 
     while(!WindowShouldClose()) {
         BeginDrawing();
