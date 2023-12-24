@@ -16,6 +16,7 @@ int b = COLOR & 0xFF;
 
 
 
+
 Texture2D explosion;
 Texture2D flag;
 bool hasNeutralized = false;
@@ -32,7 +33,7 @@ void executeRightClick(){
 int main() {
 
 
-    InitWindow(800, 600, "Minesweeper V01");
+    InitWindow(SCREEN_W, SCREEN_H, "Minesweeper V01");
 
     Game game = {0};
     GameStatus status = PLAY;
