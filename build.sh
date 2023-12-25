@@ -1,1 +1,1 @@
-gcc -o minesweeper game.c -lm -L./lib/raylib -lraylib  -I./include/
+gcc -o minsweeper game.c -L./lib/ -lraylib -I./include -lm
