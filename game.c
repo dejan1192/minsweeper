@@ -282,6 +282,8 @@ void draw_grid(Game* game){
     }
 }
 void reset(Game* game){
+    game->status = PAUSED;
+    game->timer = 0.0;
     game->maxFlags = 0;
     create_grid(game);
 }
