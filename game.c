@@ -203,6 +203,13 @@ void draw_grid(Game* game){
     int cols = COLS;
     bool won = true;
 
+    char* flags_text = "Flags: ";
+    char* flags_num = TextFormat("%d", game->maxFlags);
+    int fontSize = RECT_SIZE / 2;
+
+    DrawText(flags_text, 10, SCREEN_H+10, fontSize, BLACK);
+    DrawText(flags_num, 10 + MeasureText(flags_text, fontSize), SCREEN_H+10, fontSize, RED);
+
     for (int i = 0; i < ROWS; i ++) {
         for (int j = 0; j <  COLS; j ++) {
 
@@ -260,6 +267,7 @@ void draw_grid(Game* game){
     }
 }
 void reset(Game* game){
+    game->maxFlags = 0;
     create_grid(game);
 }
 void create_grid(Game* game){
