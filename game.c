@@ -242,11 +242,6 @@ void draw_grid(Game* game){
             }
 
             DrawRectangleLines(game->grid[i][j].rec.x, game->grid[i][j].rec.y, RECT_SIZE, RECT_SIZE, LIGHTGRAY);
-
-               Vector2 shadowPos = { game->grid[i][j].rec.x + 3, game->grid[i][j].rec.y + 3 };
-                // Draw shadow
-               Color shadowColor = (Color){0, 0, 0, 100};
-            //DrawRectangle(shadowPos.x+2, shadowPos.y+2, game->grid[i][j].rec.width, game->grid[i][j].rec.height, Fade(WHITE, 0.2f));
             game->grid[i][j].hover = false;
         }
     }
