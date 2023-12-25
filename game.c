@@ -16,6 +16,7 @@ int b = COLOR & 0xFF;
 
 
 Texture2D flag;
+Texture2D smile;
 void executeLeftClick(){
     TraceLog(LOG_INFO,"Left Click \n");
 }
@@ -72,13 +73,17 @@ int main() {
     InitWindow(SCREEN_W,HEADER_SIZE+ SCREEN_H, "Minesweeper V01");
 
     Game game = {0};
-    GameStatus status = PLAY;
+    GameStatus status = PAUSED;
     game.status = status;
 
     Image image = LoadImage("assets/flag.png");
+    Image smile_image = LoadImage("assets/smile.png");
 
     flag = LoadTextureFromImage(image);
+    smile = LoadTextureFromImage(smile_image);
+
     UnloadImage(image);
+    UnloadImage(smile_image);
     create_grid(&game);
     SetTargetFPS(60);
 
@@ -89,11 +94,13 @@ int main() {
     CommandFunction rightClick = executeRightClick;
 
     game.framesCounter = 0;
+    game.timer = 0.0; // Initialize the timer
 
     while(!WindowShouldClose()) {
         BeginDrawing();
         ClearBackground(RAYWHITE);
         Vector2 vec;
+
 
         draw_grid(&game);
         switch(game.status){
@@ -101,7 +108,11 @@ int main() {
                 handle_events(&game);
                 // selection(v.x, v.y);
                 break;
-            case PLAY:
+            case PLAY: 
+                game.timer += GetFrameTime();
+                handle_events(&game);
+                break;
+            case PAUSED:
                 handle_events(&game);
                 break;
             case WON:
@@ -140,14 +151,16 @@ MouseGridPosition get_mouse_position(Game* game){
     int r = floor(vec2.y / rw);
     int c = floor(vec2.x / cl);
 
+
     MouseGridPosition gp = {.row = r, .col = c, sizeX: rw, sizeY:cl};
     return gp;
 }
 
 void handle_events(Game* game) {
 
-    if(game->status == PLAY) {
+    if(game->status == PLAY || game->status == PAUSED) {
         if( IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ) {
+            game->status = PLAY;
             MouseGridPosition mgp = get_mouse_position(game);
             int r = mgp.row;
             int c = mgp.col;
@@ -209,6 +222,8 @@ void draw_grid(Game* game){
 
     DrawText(flags_text, 10, SCREEN_H+10, fontSize, BLACK);
     DrawText(flags_num, 10 + MeasureText(flags_text, fontSize), SCREEN_H+10, fontSize, RED);
+    DrawTexture(smile, 20, SCREEN_H+10, WHITE);
+      DrawText(TextFormat("Seconds: %.0f", game->timer), 150, SCREEN_H+10, 20, BLACK);
 
     for (int i = 0; i < ROWS; i ++) {
         for (int j = 0; j <  COLS; j ++) {
@@ -272,7 +287,6 @@ void reset(Game* game){
 }
 void create_grid(Game* game){
 
-    game->status = PLAY;
     // TraceLog(MINE_PERCENT, "MINE PERCENT %d -> per %f \n", ((SCREEN_W / ROWS) * (SCREEN_H / COLS)), ((float)MINE_PERCENT / 100.0f));
     int num_of_mines = ROWS * COLS * ((float)MINE_PERCENT / 100.0f); 
     //TraceLog(LOG_INFO,"Num of mines: %d ROWS: %d | COLS: %d | SCREEN_W:%d  | SCREEN_H:%d \n", num_of_mines, ROWS, COLS, SCREEN_W, SCREEN_H);

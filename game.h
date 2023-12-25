@@ -20,6 +20,7 @@
 
 typedef enum GameStatus {
     PLAY,
+    PAUSED,
     WON,
     LOST,
     SELECTION,
@@ -46,6 +47,7 @@ typedef struct GameRec {
 typedef struct {
     GameStatus status;
     GameRec grid[ROWS][COLS];
+    double timer;
     int maxFlags;
     int currentFrame;
     int currentLine;
