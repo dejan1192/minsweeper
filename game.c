@@ -203,6 +203,13 @@ void draw_grid(Game* game){
     int cols = COLS;
     bool won = true;
 
+    int font_size = RECT_SIZE / 2;
+    char* flagText = TextFormat("Flags: ", game->maxFlags);
+    char* flagNum = TextFormat("%d", game->maxFlags);
+
+    DrawText(flagText, 10,  SCREEN_H + 15, font_size, BLACK);
+    DrawText(flagNum, 10 + MeasureText(flagText, font_size), SCREEN_H +15, font_size, RED);
+
     for (int i = 0; i < ROWS; i ++) {
         for (int j = 0; j <  COLS; j ++) {
 
@@ -260,6 +267,7 @@ void draw_grid(Game* game){
     }
 }
 void reset(Game* game){
+    game->maxFlags = 0;
     create_grid(game);
 }
 void create_grid(Game* game){
@@ -307,7 +315,7 @@ TraceLog(LOG_INFO, "ROWS: %d \n", ROWS);
         if(game->grid[i][j].has_mine == false){
             game->grid[i][j].has_mine = true;
             game->maxFlags++;
-                            game->grid[i][j].neutralized = true;
+    //                            game->grid[i][j].neutralized = true;
             num_of_mines--;
         //TraceLog(LOG_INFO,"NUM OF MINES %d ", num_of_mines);
         }

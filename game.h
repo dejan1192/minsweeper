@@ -6,7 +6,7 @@
 #define ROWS  16
 #define COLS  30
 #define RECT_SIZE 40
-#define HEADER_SIZE 100
+#define HEADER_SIZE 50
 #define SCREEN_W (RECT_SIZE * COLS)
 #define SCREEN_H (RECT_SIZE * ROWS)
 #define CELL_W RECT_SIZE
@@ -56,6 +56,8 @@ typedef struct {
     Rectangle frameRec;
 } Game;
 
+
+int check_surrounding(Game* game, int i, int j);
 void draw_grid(Game* game);
 void handle_events(Game* game);
 void create_grid(Game* game);
