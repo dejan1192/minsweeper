@@ -3,15 +3,15 @@
 
 #include "raylib.h"
 
-#define ROWS  16
-#define COLS  30
-#define RECT_SIZE 40
+#define ROWS  20
+#define COLS  25
+#define RECT_SIZE 30
 #define HEADER_SIZE 50
 #define SCREEN_W (RECT_SIZE * COLS)
 #define SCREEN_H (RECT_SIZE * ROWS)
 #define CELL_W RECT_SIZE
 #define CELL_H RECT_SIZE
-#define MINE_PERCENT 15
+#define MINE_PERCENT 11
 
 
 #define NUM_FRAMES_PER_LINE 5
@@ -22,7 +22,6 @@ typedef enum GameStatus {
     PLAY,
     WON,
     LOST,
-    SELECTION,
 } GameStatus;
 
 typedef void (*CommandFunction)(void);
@@ -37,6 +36,7 @@ typedef struct GameRec {
     Rectangle rec;
     bool has_mine;
     bool flagged;
+    // Currently only for debugging
     bool neutralized;
     bool hover;
     bool active;
@@ -46,14 +46,14 @@ typedef struct GameRec {
 typedef struct {
     GameStatus status;
     GameRec grid[ROWS][COLS];
+    Rectangle frameRec;
+    Vector2 position;
+    int currentLine;
     int maxFlags;
     int currentFrame;
-    int currentLine;
-    Vector2 position;
     int framesCounter;
     float frameWidth;
     float frameHeight;
-    Rectangle frameRec;
 } Game;
 
 

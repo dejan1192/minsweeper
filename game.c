@@ -32,8 +32,7 @@ void flood_fill(Game* game, int r, int c, int curr_size){
 
         return;
     }
-    int surr_cell_count = check_surrounding(game, r, c);
-    if(surr_cell_count > 0){
+    if(check_surrounding(game, r, c) > 0){
         game->grid[r][c].visited = true;
         if( !game->grid[r][c].has_mine && !game->grid[r][c].flagged ){
             game->grid[r][c].active = true;
@@ -85,10 +84,6 @@ int main() {
 
         draw_grid(&game);
         switch(game.status){
-            case SELECTION:
-                handle_events(&game);
-                // selection(v.x, v.y);
-                break;
             case PLAY:
                 handle_events(&game);
                 break;
@@ -128,7 +123,7 @@ MouseGridPosition get_mouse_position(Game* game){
     int r = floor(vec2.y / rw);
     int c = floor(vec2.x / cl);
 
-    MouseGridPosition gp = {.row = r, .col = c, sizeX: rw, sizeY:cl};
+    MouseGridPosition gp = {.row = r, .col = c, .sizeX = rw, .sizeY = cl};
     return gp;
 }
 
@@ -152,9 +147,9 @@ void handle_events(Game* game) {
     }
     if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)){
             MouseGridPosition mgp = get_mouse_position(game);
+
             int r = mgp.row;
             int c = mgp.col;
-           
            
             if(game->grid[r][c].active == true 
             || (game->grid[r][c].flagged == false && game->maxFlags <= 0)){
@@ -191,7 +186,7 @@ void draw_grid(Game* game){
     int cols = COLS;
     bool won = true;
 
-    int font_size = RECT_SIZE / 2;
+    int font_size = RECT_SIZE * 0.7f;
     const char* flagText = TextFormat("Flags: ", game->maxFlags);
     const char* flagNum = TextFormat("%d", game->maxFlags);
 
@@ -219,7 +214,7 @@ void draw_grid(Game* game){
 
                     if(num_of_mines > 0){
                         int textSize = CELL_W/2;
-                        char* text = TextFormat("%d", num_of_mines);
+                        const char* text = TextFormat("%d", num_of_mines);
                         int textX = centerX - (MeasureText(text, textSize) / 2);
                         int textY = centerY - (textSize / 2);
                         DrawText(text, textX, textY, textSize, BLACK);
@@ -228,8 +223,6 @@ void draw_grid(Game* game){
             }else if(game->grid[i][j].flagged) {
                 float centerX = (game->grid[i][j].rec.x + game->grid[i][j].rec.width) - game->grid[i][j].rec.width / 2;
                 float centerY = (game->grid[i][j].rec.y + game->grid[i][j].rec.height) - game->grid[i][j].rec.height / 2;
-
-
                 // Calculate position to start drawing the flag
                 // so that it is centered in the cell
                 float flagX = centerX - (float)flag.width / 2;
@@ -243,10 +236,17 @@ void draw_grid(Game* game){
             }else if(game->grid[i][j].hover) {
                 DrawRectangleRec(game->grid[i][j].rec, Fade(GREEN, 0.3f));
             } else{
+                // Draw the actual cell
+                //DrawRectangleRec(game->grid[i][j].rec, GetCellColor(game->grid[i][j]));
                 won = false;
             }
 
             DrawRectangleLines(game->grid[i][j].rec.x, game->grid[i][j].rec.y, RECT_SIZE, RECT_SIZE, LIGHTGRAY);
+
+               Vector2 shadowPos = { game->grid[i][j].rec.x + 3, game->grid[i][j].rec.y + 3 };
+                // Draw shadow
+               Color shadowColor = (Color){0, 0, 0, 100};
+            //DrawRectangle(shadowPos.x+2, shadowPos.y+2, game->grid[i][j].rec.width, game->grid[i][j].rec.height, Fade(WHITE, 0.2f));
             game->grid[i][j].hover = false;
         }
     }
@@ -261,13 +261,8 @@ void reset(Game* game){
 void create_grid(Game* game){
 
     game->status = PLAY;
-    // TraceLog(MINE_PERCENT, "MINE PERCENT %d -> per %f \n", ((SCREEN_W / ROWS) * (SCREEN_H / COLS)), ((float)MINE_PERCENT / 100.0f));
     int num_of_mines = ROWS * COLS * ((float)MINE_PERCENT / 100.0f); 
-    //TraceLog(LOG_INFO,"Num of mines: %d ROWS: %d | COLS: %d | SCREEN_W:%d  | SCREEN_H:%d \n", num_of_mines, ROWS, COLS, SCREEN_W, SCREEN_H);
 
-  
-
-TraceLog(LOG_INFO, "ROWS: %d \n", ROWS);
     for (int i = 0; i < ROWS; i ++) {
         for (int j = 0; j < COLS; j ++) {
             int width = SCREEN_W / COLS;
@@ -281,19 +276,10 @@ TraceLog(LOG_INFO, "ROWS: %d \n", ROWS);
                 .flagged = false,
                 .visited = false
             };
-
-            if (GetRandomValue(0, 100) < 10) {
-            //    gr.has_mine = true;
-
-            //    game->maxFlags++;
-            }
-            //TraceLog(LOG_INFO,"Max Flags: %d \n", game->maxFlags);
             game->grid[i][j] = gr;
-            //           if(gr.has_mine)
-            //                game->grid[i][j].neutralized = true;
-
         }
     }
+
     int i,j;
     TraceLog(LOG_INFO,"NUM OF MINES %d , TOTAL_FIELDS: %d ", num_of_mines, ROWS * COLS);
     while(num_of_mines > 0){
@@ -303,9 +289,9 @@ TraceLog(LOG_INFO, "ROWS: %d \n", ROWS);
         if(game->grid[i][j].has_mine == false){
             game->grid[i][j].has_mine = true;
             game->maxFlags++;
-    //                            game->grid[i][j].neutralized = true;
+            // Debugging
+            //game->grid[i][j].neutralized = true;
             num_of_mines--;
-        //TraceLog(LOG_INFO,"NUM OF MINES %d ", num_of_mines);
         }
     }
 
