@@ -5,7 +5,6 @@
 #include "game.h"
 
 #define COLOR 0x7497a8
-#define MAX_SQUARES_REVEALED 10
 
 // extract the red component
 int r = (COLOR >> 16) & 0xFF;
@@ -26,15 +25,33 @@ void executeRightClick(){
 
 void flood_fill(Game* game, int r, int c, int curr_size){
 
-    int len = sizeof(game->grid) / sizeof(game->grid[0]);
-
     if(
-        (r < 0 || r >= len || c < 0 || c>= len) // out of bounds
+        (r < 0 || r >= ROWS || c < 0 || c>= COLS) // out of bounds
         || game->grid[r][c].visited// already visited
-        || curr_size == MAX_SQUARES_REVEALED // max amount of cells to visit
     ){
+
         return;
     }
+    int surr_cell_count = check_surrounding(game, r, c);
+    if(surr_cell_count > 0){
+        game->grid[r][c].visited = true;
+        if( !game->grid[r][c].has_mine && !game->grid[r][c].flagged ){
+            float centerX = (game->grid[r][c].rec.x + game->grid[r][c].rec.width) - game->grid[r][c].rec.width / 2;
+            float centerY = (game->grid[r][c].rec.y + game->grid[r][c].rec.height) - game->grid[r][c].rec.height / 2;
+
+            if(surr_cell_count > 0){
+                int textSize = CELL_W/2;
+                char* text = TextFormat("%d", surr_cell_count);
+                int textX = centerX - (MeasureText(text, textSize) / 2);
+                int textY = centerY - (textSize / 2);
+                TraceLog(LOG_INFO,"TEXT: %s | X: %d | Y: %d | IN ROW: %d IN COL: %d \n", text, textX, textY, r, c);
+                DrawText(text, textX, textY, textSize, BLACK);
+            }
+            game->grid[r][c].active = true;
+            return;
+        }
+    }
+    //TraceLog(LOG_INFO, "MAX cells %d of %d \n",curr_size, MAX_SQUARES_REVEALED);
 
     game->grid[r][c].visited = true;
     if( !game->grid[r][c].has_mine && !game->grid[r][c].flagged )
@@ -52,7 +69,7 @@ void flood_fill(Game* game, int r, int c, int curr_size){
 int main() {
 
 
-    InitWindow(SCREEN_W, SCREEN_H, "Minesweeper V01");
+    InitWindow(SCREEN_W,HEADER_SIZE+ SCREEN_H, "Minesweeper V01");
 
     Game game = {0};
     GameStatus status = PLAY;
@@ -108,30 +125,50 @@ int main() {
     return 0;
 }
 
+typedef struct {
+    int row;
+    int col;
+    int sizeX;
+    int sizeY;
+} MouseGridPosition;
+
+MouseGridPosition get_mouse_position(Game* game){
+
+    Vector2 vec2 = GetMousePosition();
+    int rw = SCREEN_W / COLS;
+    int cl = SCREEN_H / ROWS;
+    int r = floor(vec2.y / rw);
+    int c = floor(vec2.x / cl);
+
+    MouseGridPosition gp = {.row = r, .col = c, sizeX: rw, sizeY:cl};
+    return gp;
+}
+
 void handle_events(Game* game) {
 
     if(game->status == PLAY) {
         if( IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ) {
-            Vector2 vec2 = GetMousePosition();
-            int r = floor(vec2.x / ROWS);
-            int c = floor(vec2.y / COLS);
+            MouseGridPosition mgp = get_mouse_position(game);
+            int r = mgp.row;
+            int c = mgp.col;
+
             if(game->grid[r][c].flagged){
                 return;
             }
-            //TraceLog(LOG_INFO,"Mouse was pressed %f -> %f \n", vec2.x/ROWS, vec2.y);
-            TraceLog(LOG_INFO,"Mouse was pressed %d -> %d \n", r, c);
             if( game->grid[r][c].active == false) {
+                TraceLog(LOG_INFO,"ROW: %d | COL: %d \n", r, c);
                 game->grid[r][c].active = true;;
             }
         }
 
     }
     if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)){
-        Vector2 vec2 = GetMousePosition();
-        int r = floor(vec2.x / ROWS);
-        int c = floor(vec2.y / COLS);
-
-        if( game->grid[r][c].active == true 
+            MouseGridPosition mgp = get_mouse_position(game);
+            int r = mgp.row;
+            int c = mgp.col;
+           
+           
+            if(game->grid[r][c].active == true 
             || (game->grid[r][c].flagged == false && game->maxFlags <= 0)){
             return;
         }
@@ -147,13 +184,12 @@ void handle_events(Game* game) {
 }
 
 int check_surrounding(Game* game, int i, int j){
-    int len = sizeof(game->grid) / sizeof(game->grid[0]);
     int num_of_mines = 0;
     for (int x = i - 1; x <= i + 1; x ++) {
         for (int y = j - 1; y <= j + 1; y ++) {
-            if (x >= 0 && x < len && y >= 0 && y < len) {
+            if (x >= 0 && x < ROWS && y >= 0 && y < COLS) {
                 if(game->grid[x][y].has_mine) {
-                    // TraceLog(LOG_INFO,"Found mine at %d -> %d \n", x, y);
+                   // TraceLog(LOG_INFO,"Found mine at %d -> %d \n", x, y);
                     num_of_mines ++;
                 }
             }
@@ -163,12 +199,12 @@ int check_surrounding(Game* game, int i, int j){
 }
 
 void draw_grid(Game* game){
-    int rows = SCREEN_W / ROWS;
-    int cols = SCREEN_H / COLS;
+    int rows = ROWS;
+    int cols = COLS;
     bool won = true;
 
-    for (int i = 0; i < rows; i ++) {
-        for (int j = 0; j <  cols; j ++) {
+    for (int i = 0; i < ROWS; i ++) {
+        for (int j = 0; j <  COLS; j ++) {
 
             if(game->grid[i][j].active) {
                 if(game->grid[i][j].has_mine) {
@@ -177,17 +213,27 @@ void draw_grid(Game* game){
                 }else{
                     int num_of_mines = check_surrounding(game, i, j);
                     if(num_of_mines == 0 && game->grid[i][j].active == true ){
-                        // reveal up to 10 squares
-                        flood_fill(game, i, j, 0);
+                        int revealed = 0;
+                        flood_fill(game, i, j, revealed);
                     }
 
                     DrawRectangleRec(game->grid[i][j].rec, ColorFromHSV(r-10,g-10,b-10));
-                    if(num_of_mines > 0)
-                        DrawText(TextFormat("%d", num_of_mines), i * ROWS+15, j * COLS+10, 20, BLACK);
+
+                    float centerX = (game->grid[i][j].rec.x + game->grid[i][j].rec.width) - game->grid[i][j].rec.width / 2;
+                    float centerY = (game->grid[i][j].rec.y + game->grid[i][j].rec.height) - game->grid[i][j].rec.height / 2;
+
+                    if(num_of_mines > 0){
+                        int textSize = CELL_W/2;
+                        char* text = TextFormat("%d", num_of_mines);
+                        int textX = centerX - (MeasureText(text, textSize) / 2);
+                        int textY = centerY - (textSize / 2);
+                        DrawText(text, textX, textY, textSize, BLACK);
+                    }
                 }
             }else if(game->grid[i][j].flagged) {
-                float centerX = game->grid[i][j].rec.x + game->grid[i][j].rec.width / 2;
-                float centerY = game->grid[i][j].rec.y + game->grid[i][j].rec.height / 2;
+                float centerX = (game->grid[i][j].rec.x + game->grid[i][j].rec.width) - game->grid[i][j].rec.width / 2;
+                float centerY = (game->grid[i][j].rec.y + game->grid[i][j].rec.height) - game->grid[i][j].rec.height / 2;
+
 
                 // Calculate position to start drawing the flag
                 // so that it is centered in the cell
@@ -205,7 +251,7 @@ void draw_grid(Game* game){
                 won = false;
             }
 
-            DrawRectangleLines(game->grid[i][j].rec.x, game->grid[i][j].rec.y, game->grid[i][j].rec.width, game->grid[i][j].rec.height, LIGHTGRAY);
+            DrawRectangleLines(game->grid[i][j].rec.x, game->grid[i][j].rec.y, RECT_SIZE, RECT_SIZE, LIGHTGRAY);
             game->grid[i][j].hover = false;
         }
     }
@@ -219,12 +265,18 @@ void reset(Game* game){
 void create_grid(Game* game){
 
     game->status = PLAY;
-    int num_of_mines = (SCREEN_W / ROWS) * (SCREEN_H / COLS) * MINE_PERCENT / 100; 
+    // TraceLog(MINE_PERCENT, "MINE PERCENT %d -> per %f \n", ((SCREEN_W / ROWS) * (SCREEN_H / COLS)), ((float)MINE_PERCENT / 100.0f));
+    int num_of_mines = ROWS * COLS * ((float)MINE_PERCENT / 100.0f); 
+    //TraceLog(LOG_INFO,"Num of mines: %d ROWS: %d | COLS: %d | SCREEN_W:%d  | SCREEN_H:%d \n", num_of_mines, ROWS, COLS, SCREEN_W, SCREEN_H);
 
+  
 
-    for (int i = 0; i < SCREEN_W/ ROWS; i ++) {
-        for (int j = 0; j < SCREEN_H / COLS; j ++) {
-            Rectangle rect = {.x = i * ROWS, .y = j * COLS, .width = RECT_SIZE, .height = RECT_SIZE};
+TraceLog(LOG_INFO, "ROWS: %d \n", ROWS);
+    for (int i = 0; i < ROWS; i ++) {
+        for (int j = 0; j < COLS; j ++) {
+            int width = SCREEN_W / COLS;
+            int height = SCREEN_H / ROWS;
+            Rectangle rect = {.x = j * RECT_SIZE, .y = i* RECT_SIZE, .width = width, .height = height};
 
             GameRec gr = {
                 .rec = rect,
@@ -235,14 +287,30 @@ void create_grid(Game* game){
             };
 
             if (GetRandomValue(0, 100) < 10) {
-                gr.has_mine = true;
+            //    gr.has_mine = true;
 
-                game->maxFlags++;
+            //    game->maxFlags++;
             }
+            //TraceLog(LOG_INFO,"Max Flags: %d \n", game->maxFlags);
             game->grid[i][j] = gr;
             //           if(gr.has_mine)
             //                game->grid[i][j].neutralized = true;
 
         }
     }
+    int i,j;
+    TraceLog(LOG_INFO,"NUM OF MINES %d , TOTAL_FIELDS: %d ", num_of_mines, ROWS * COLS);
+    while(num_of_mines > 0){
+        i = GetRandomValue(0, ROWS - 1);
+        j = GetRandomValue(0, COLS - 1);
+
+        if(game->grid[i][j].has_mine == false){
+            game->grid[i][j].has_mine = true;
+            game->maxFlags++;
+                            game->grid[i][j].neutralized = true;
+            num_of_mines--;
+        //TraceLog(LOG_INFO,"NUM OF MINES %d ", num_of_mines);
+        }
+    }
+
 }

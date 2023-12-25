@@ -3,11 +3,14 @@
 
 #include "raylib.h"
 
-#define ROWS  40
-#define COLS  40
+#define ROWS  16
+#define COLS  30
 #define RECT_SIZE 40
-#define SCREEN_W 800
-#define SCREEN_H 600
+#define HEADER_SIZE 100
+#define SCREEN_W (RECT_SIZE * COLS)
+#define SCREEN_H (RECT_SIZE * ROWS)
+#define CELL_W RECT_SIZE
+#define CELL_H RECT_SIZE
 #define MINE_PERCENT 15
 
 
@@ -42,7 +45,7 @@ typedef struct GameRec {
 
 typedef struct {
     GameStatus status;
-    GameRec grid[SCREEN_W / ROWS][SCREEN_H / COLS];
+    GameRec grid[ROWS][COLS];
     int maxFlags;
     int currentFrame;
     int currentLine;
