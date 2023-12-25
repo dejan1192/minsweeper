@@ -36,22 +36,10 @@ void flood_fill(Game* game, int r, int c, int curr_size){
     if(surr_cell_count > 0){
         game->grid[r][c].visited = true;
         if( !game->grid[r][c].has_mine && !game->grid[r][c].flagged ){
-            float centerX = (game->grid[r][c].rec.x + game->grid[r][c].rec.width) - game->grid[r][c].rec.width / 2;
-            float centerY = (game->grid[r][c].rec.y + game->grid[r][c].rec.height) - game->grid[r][c].rec.height / 2;
-
-            if(surr_cell_count > 0){
-                int textSize = CELL_W/2;
-                char* text = TextFormat("%d", surr_cell_count);
-                int textX = centerX - (MeasureText(text, textSize) / 2);
-                int textY = centerY - (textSize / 2);
-                TraceLog(LOG_INFO,"TEXT: %s | X: %d | Y: %d | IN ROW: %d IN COL: %d \n", text, textX, textY, r, c);
-                DrawText(text, textX, textY, textSize, BLACK);
-            }
             game->grid[r][c].active = true;
             return;
         }
     }
-    //TraceLog(LOG_INFO, "MAX cells %d of %d \n",curr_size, MAX_SQUARES_REVEALED);
 
     game->grid[r][c].visited = true;
     if( !game->grid[r][c].has_mine && !game->grid[r][c].flagged )
@@ -204,8 +192,8 @@ void draw_grid(Game* game){
     bool won = true;
 
     int font_size = RECT_SIZE / 2;
-    char* flagText = TextFormat("Flags: ", game->maxFlags);
-    char* flagNum = TextFormat("%d", game->maxFlags);
+    const char* flagText = TextFormat("Flags: ", game->maxFlags);
+    const char* flagNum = TextFormat("%d", game->maxFlags);
 
     DrawText(flagText, 10,  SCREEN_H + 15, font_size, BLACK);
     DrawText(flagNum, 10 + MeasureText(flagText, font_size), SCREEN_H +15, font_size, RED);
