@@ -2,6 +2,7 @@
 #include "stdlib.h"
 #include "raylib.h"
 #include "math.h"
+#include "asset.h"
 #include "game.h"
 
 #define COLOR 0x7497a8
@@ -15,13 +16,19 @@ int g = (COLOR >> 8) & 0xFF;
 int b = COLOR & 0xFF;
 
 
-Texture2D flag;
 Texture2D smile;
+
 void executeLeftClick(){
     TraceLog(LOG_INFO,"Left Click \n");
 }
 void executeRightClick(){
     TraceLog(LOG_INFO,"Right Click \n");
+}
+
+void initGame(Game* game, Assets* assets){
+    initAssets(assets);
+    game->assets = assets;
+    game->status = PAUSED;
 }
 
 void flood_fill(Game* game, int r, int c, int curr_size){
@@ -42,7 +49,7 @@ void flood_fill(Game* game, int r, int c, int curr_size){
 
             if(surr_cell_count > 0){
                 int textSize = CELL_W/2;
-                char* text = TextFormat("%d", surr_cell_count);
+                const char* text = TextFormat("%d", surr_cell_count);
                 int textX = centerX - (MeasureText(text, textSize) / 2);
                 int textY = centerY - (textSize / 2);
                 TraceLog(LOG_INFO,"TEXT: %s | X: %d | Y: %d | IN ROW: %d IN COL: %d \n", text, textX, textY, r, c);
@@ -72,15 +79,23 @@ int main() {
 
     InitWindow(SCREEN_W,HEADER_SIZE+ SCREEN_H, "Minesweeper V01");
 
-    Game game = {0};
-    GameStatus status = PAUSED;
-    game.status = status;
+
+    Game game;
+    Assets assets;
+
+    initGame(&game, &assets);
 
     Image image = LoadImage("assets/flag.png");
     Image smile_image = LoadImage("assets/smile.png");
 
-    flag = LoadTextureFromImage(image);
-    smile = LoadTextureFromImage(smile_image);
+    Texture2D flag_texture = LoadTextureFromImage(image);
+    void* ptr = (void*)&flag_texture;
+    Asset asset = {.name = "flag", .ptr = ptr, .type = TEXTURE};
+
+    
+    addAsset(game.assets, asset);
+
+     //smile = LoadTextureFromImage(smile_image);
 
     UnloadImage(image);
     UnloadImage(smile_image);
@@ -132,6 +147,7 @@ int main() {
         }
         EndDrawing();
     }
+    unloadAssets(game.assets);
 
     return 0;
 }
@@ -202,7 +218,6 @@ int check_surrounding(Game* game, int i, int j){
         for (int y = j - 1; y <= j + 1; y ++) {
             if (x >= 0 && x < ROWS && y >= 0 && y < COLS) {
                 if(game->grid[x][y].has_mine) {
-                   // TraceLog(LOG_INFO,"Found mine at %d -> %d \n", x, y);
                     num_of_mines ++;
                 }
             }
@@ -217,13 +232,12 @@ void draw_grid(Game* game){
     bool won = true;
 
     char* flags_text = "Flags: ";
-    char* flags_num = TextFormat("%d", game->maxFlags);
+    const char* flags_num = TextFormat("%d", game->maxFlags);
     int fontSize = RECT_SIZE / 2;
 
     DrawText(flags_text, 10, SCREEN_H+10, fontSize, BLACK);
     DrawText(flags_num, 10 + MeasureText(flags_text, fontSize), SCREEN_H+10, fontSize, RED);
-    DrawTexture(smile, 20, SCREEN_H+10, WHITE);
-      DrawText(TextFormat("Seconds: %.0f", game->timer), 150, SCREEN_H+10, 20, BLACK);
+    DrawText(TextFormat("Time: %.0f", game->timer), 150, SCREEN_H+10, 20, BLACK);
 
     for (int i = 0; i < ROWS; i ++) {
         for (int j = 0; j <  COLS; j ++) {
@@ -246,7 +260,7 @@ void draw_grid(Game* game){
 
                     if(num_of_mines > 0){
                         int textSize = CELL_W/2;
-                        char* text = TextFormat("%d", num_of_mines);
+                        const char* text = TextFormat("%d", num_of_mines);
                         int textX = centerX - (MeasureText(text, textSize) / 2);
                         int textY = centerY - (textSize / 2);
                         DrawText(text, textX, textY, textSize, BLACK);
@@ -256,7 +270,7 @@ void draw_grid(Game* game){
                 float centerX = (game->grid[i][j].rec.x + game->grid[i][j].rec.width) - game->grid[i][j].rec.width / 2;
                 float centerY = (game->grid[i][j].rec.y + game->grid[i][j].rec.height) - game->grid[i][j].rec.height / 2;
 
-
+                Texture2D flag = asset_get(game->assets, flag, Texture2D);
                 // Calculate position to start drawing the flag
                 // so that it is centered in the cell
                 float flagX = centerX - (float)flag.width / 2;
@@ -289,13 +303,8 @@ void reset(Game* game){
 }
 void create_grid(Game* game){
 
-    // TraceLog(MINE_PERCENT, "MINE PERCENT %d -> per %f \n", ((SCREEN_W / ROWS) * (SCREEN_H / COLS)), ((float)MINE_PERCENT / 100.0f));
     int num_of_mines = ROWS * COLS * ((float)MINE_PERCENT / 100.0f); 
-    //TraceLog(LOG_INFO,"Num of mines: %d ROWS: %d | COLS: %d | SCREEN_W:%d  | SCREEN_H:%d \n", num_of_mines, ROWS, COLS, SCREEN_W, SCREEN_H);
 
-  
-
-TraceLog(LOG_INFO, "ROWS: %d \n", ROWS);
     for (int i = 0; i < ROWS; i ++) {
         for (int j = 0; j < COLS; j ++) {
             int width = SCREEN_W / COLS;
@@ -309,21 +318,10 @@ TraceLog(LOG_INFO, "ROWS: %d \n", ROWS);
                 .flagged = false,
                 .visited = false
             };
-
-            if (GetRandomValue(0, 100) < 10) {
-            //    gr.has_mine = true;
-
-            //    game->maxFlags++;
-            }
-            //TraceLog(LOG_INFO,"Max Flags: %d \n", game->maxFlags);
             game->grid[i][j] = gr;
-            //           if(gr.has_mine)
-            //                game->grid[i][j].neutralized = true;
-
         }
     }
     int i,j;
-    TraceLog(LOG_INFO,"NUM OF MINES %d , TOTAL_FIELDS: %d ", num_of_mines, ROWS * COLS);
     while(num_of_mines > 0){
         i = GetRandomValue(0, ROWS - 1);
         j = GetRandomValue(0, COLS - 1);
@@ -331,9 +329,8 @@ TraceLog(LOG_INFO, "ROWS: %d \n", ROWS);
         if(game->grid[i][j].has_mine == false){
             game->grid[i][j].has_mine = true;
             game->maxFlags++;
-                            game->grid[i][j].neutralized = true;
+                            // game->grid[i][j].neutralized = true;
             num_of_mines--;
-        //TraceLog(LOG_INFO,"NUM OF MINES %d ", num_of_mines);
         }
     }
 

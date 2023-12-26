@@ -2,16 +2,17 @@
 #define GAME_H
 
 #include "raylib.h"
+#include "asset.h"
 
-#define ROWS  16
-#define COLS  30
-#define RECT_SIZE 40
-#define HEADER_SIZE 100
+#define ROWS  20
+#define COLS  25
+#define RECT_SIZE 30
+#define HEADER_SIZE 50
 #define SCREEN_W (RECT_SIZE * COLS)
 #define SCREEN_H (RECT_SIZE * ROWS)
 #define CELL_W RECT_SIZE
 #define CELL_H RECT_SIZE
-#define MINE_PERCENT 15
+#define MINE_PERCENT 11
 
 
 #define NUM_FRAMES_PER_LINE 5
@@ -33,7 +34,6 @@ typedef struct Command {
 } Command;
 
 
-
 typedef struct GameRec {
     Rectangle rec;
     bool has_mine;
@@ -47,6 +47,7 @@ typedef struct GameRec {
 typedef struct {
     GameStatus status;
     GameRec grid[ROWS][COLS];
+    Assets* assets;
     double timer;
     int maxFlags;
     int currentFrame;
@@ -57,6 +58,8 @@ typedef struct {
     float frameHeight;
     Rectangle frameRec;
 } Game;
+
+void initGame(Game* game, Assets* assets);
 
 void draw_grid(Game* game);
 void handle_events(Game* game);
