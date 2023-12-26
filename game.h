@@ -24,7 +24,6 @@ typedef enum GameStatus {
     PAUSED,
     WON,
     LOST,
-    SELECTION,
 } GameStatus;
 
 typedef void (*CommandFunction)(void);
@@ -38,6 +37,7 @@ typedef struct GameRec {
     Rectangle rec;
     bool has_mine;
     bool flagged;
+    // Currently only for debugging
     bool neutralized;
     bool hover;
     bool active;
@@ -51,12 +51,9 @@ typedef struct {
     double timer;
     int maxFlags;
     int currentFrame;
-    int currentLine;
-    Vector2 position;
     int framesCounter;
     float frameWidth;
     float frameHeight;
-    Rectangle frameRec;
 } Game;
 
 void initGame(Game* game, Assets* assets);

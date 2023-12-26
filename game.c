@@ -40,26 +40,13 @@ void flood_fill(Game* game, int r, int c, int curr_size){
 
         return;
     }
-    int surr_cell_count = check_surrounding(game, r, c);
-    if(surr_cell_count > 0){
+    if(check_surrounding(game, r, c) > 0){
         game->grid[r][c].visited = true;
         if( !game->grid[r][c].has_mine && !game->grid[r][c].flagged ){
-            float centerX = (game->grid[r][c].rec.x + game->grid[r][c].rec.width) - game->grid[r][c].rec.width / 2;
-            float centerY = (game->grid[r][c].rec.y + game->grid[r][c].rec.height) - game->grid[r][c].rec.height / 2;
-
-            if(surr_cell_count > 0){
-                int textSize = CELL_W/2;
-                const char* text = TextFormat("%d", surr_cell_count);
-                int textX = centerX - (MeasureText(text, textSize) / 2);
-                int textY = centerY - (textSize / 2);
-                TraceLog(LOG_INFO,"TEXT: %s | X: %d | Y: %d | IN ROW: %d IN COL: %d \n", text, textX, textY, r, c);
-                DrawText(text, textX, textY, textSize, BLACK);
-            }
             game->grid[r][c].active = true;
             return;
         }
     }
-    //TraceLog(LOG_INFO, "MAX cells %d of %d \n",curr_size, MAX_SQUARES_REVEALED);
 
     game->grid[r][c].visited = true;
     if( !game->grid[r][c].has_mine && !game->grid[r][c].flagged )
@@ -119,15 +106,7 @@ int main() {
 
         draw_grid(&game);
         switch(game.status){
-            case SELECTION:
-                handle_events(&game);
-                // selection(v.x, v.y);
-                break;
-            case PLAY: 
-                game.timer += GetFrameTime();
-                handle_events(&game);
-                break;
-            case PAUSED:
+            case PLAY:
                 handle_events(&game);
                 break;
             case WON:
@@ -167,8 +146,7 @@ MouseGridPosition get_mouse_position(Game* game){
     int r = floor(vec2.y / rw);
     int c = floor(vec2.x / cl);
 
-
-    MouseGridPosition gp = {.row = r, .col = c, sizeX: rw, sizeY:cl};
+    MouseGridPosition gp = {.row = r, .col = c, .sizeX = rw, .sizeY = cl};
     return gp;
 }
 
@@ -193,9 +171,9 @@ void handle_events(Game* game) {
     }
     if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)){
             MouseGridPosition mgp = get_mouse_position(game);
+
             int r = mgp.row;
             int c = mgp.col;
-           
            
             if(game->grid[r][c].active == true 
             || (game->grid[r][c].flagged == false && game->maxFlags <= 0)){
@@ -231,13 +209,12 @@ void draw_grid(Game* game){
     int cols = COLS;
     bool won = true;
 
-    char* flags_text = "Flags: ";
-    const char* flags_num = TextFormat("%d", game->maxFlags);
-    int fontSize = RECT_SIZE / 2;
+    int font_size = RECT_SIZE * 0.7f;
+    const char* flagText = TextFormat("Flags: ", game->maxFlags);
+    const char* flagNum = TextFormat("%d", game->maxFlags);
 
-    DrawText(flags_text, 10, SCREEN_H+10, fontSize, BLACK);
-    DrawText(flags_num, 10 + MeasureText(flags_text, fontSize), SCREEN_H+10, fontSize, RED);
-    DrawText(TextFormat("Time: %.0f", game->timer), 150, SCREEN_H+10, 20, BLACK);
+    DrawText(flagText, 10,  SCREEN_H + 15, font_size, BLACK);
+    DrawText(flagNum, 10 + MeasureText(flagText, font_size), SCREEN_H +15, font_size, RED);
 
     for (int i = 0; i < ROWS; i ++) {
         for (int j = 0; j <  COLS; j ++) {
@@ -269,8 +246,6 @@ void draw_grid(Game* game){
             }else if(game->grid[i][j].flagged) {
                 float centerX = (game->grid[i][j].rec.x + game->grid[i][j].rec.width) - game->grid[i][j].rec.width / 2;
                 float centerY = (game->grid[i][j].rec.y + game->grid[i][j].rec.height) - game->grid[i][j].rec.height / 2;
-
-                Texture2D flag = asset_get(game->assets, flag, Texture2D);
                 // Calculate position to start drawing the flag
                 // so that it is centered in the cell
                 float flagX = centerX - (float)flag.width / 2;
@@ -284,6 +259,8 @@ void draw_grid(Game* game){
             }else if(game->grid[i][j].hover) {
                 DrawRectangleRec(game->grid[i][j].rec, Fade(GREEN, 0.3f));
             } else{
+                // Draw the actual cell
+                //DrawRectangleRec(game->grid[i][j].rec, GetCellColor(game->grid[i][j]));
                 won = false;
             }
 
@@ -302,7 +279,6 @@ void reset(Game* game){
     create_grid(game);
 }
 void create_grid(Game* game){
-
     int num_of_mines = ROWS * COLS * ((float)MINE_PERCENT / 100.0f); 
 
     for (int i = 0; i < ROWS; i ++) {
@@ -321,6 +297,7 @@ void create_grid(Game* game){
             game->grid[i][j] = gr;
         }
     }
+
     int i,j;
     while(num_of_mines > 0){
         i = GetRandomValue(0, ROWS - 1);
@@ -329,7 +306,8 @@ void create_grid(Game* game){
         if(game->grid[i][j].has_mine == false){
             game->grid[i][j].has_mine = true;
             game->maxFlags++;
-                            // game->grid[i][j].neutralized = true;
+            // Debugging
+            //game->grid[i][j].neutralized = true;
             num_of_mines--;
         }
     }
