@@ -4,45 +4,82 @@
 #include "asset.h"
 
 void initAssets(Assets* assets){
-    assets->asset_textures = NULL;
+    assets->items = NULL;
     assets->count = 0;
     assets->capacity = 0;
 }
 
-void addAsset(Assets* assets, Asset asset){
-        TraceLog(LOG_INFO, "Reallocating assets to %d", assets->capacity);
-    if(assets->count == assets->capacity){
+static void addAsset(Assets* assets, Asset asset){
+   if(assets->count == assets->capacity){
         assets->capacity = assets->capacity == 0 ? 4 : assets->capacity * 2;
-        TraceLog(LOG_INFO, " ASSET TEXTURES %zu", sizeof(Texture2D));
-        assets->asset_textures = realloc(assets->asset_textures, assets->capacity * sizeof(Texture2D));
+        assets->items = realloc(assets->items, sizeof(Asset) * assets->capacity);
     }
-    assets->asset_textures[assets->count] = asset;
-    assets->count++;
+    assets->items[assets->count++] = asset; 
 }
 
-Asset* getAsset(Assets* assets, const char* name){
-    for(int i =0; i < assets->count; i++){
-        if(asset_name(assets->asset_textures[i]) == name){
-            return &assets->asset_textures[i];
+Texture assets_tex_from_img(Assets* assets, const char* name){
+    for(int i = 0; i < assets->count; i++){
+        if(assets->items[i].type == TEXTURE_IMAGE){
+            if(assets->items[i].name == name){
+                return assets->items[i].item.texture;
+            }
         }
     }
+
+    Texture texImg = LoadTextureFromImage(assets_image(assets, name));
+    Asset asset = (Asset) { .item.texture = texImg, .name = name, .type = TEXTURE_IMAGE }; 
+    addAsset(assets, asset);
+    return texImg;
+}
+
+Image assets_image(Assets* assets, const char* name){
+    Image img = LoadImage(name);
+    for(int i = 0; i < assets->count; i++){
+        if(assets->items[i].type == IMAGE){
+            if(assets->items[i].name == name){
+                return assets->items[i].item.image;
+            }
+        }
+    }
+    Asset asset = (Asset) { .item.image = img, .name = name, .type = IMAGE }; 
+    addAsset(assets, asset);
+    return img;
+}
+
+Texture assets_texture(Assets* assets, const char* name){
+    Texture t = LoadTexture(name);
+    for(int i = 0; i < assets->count; i++){
+        if(assets->items[i].type == TEXTURE){
+            if(assets->items[i].name == name){
+                return assets->items[i].item.texture;
+            }
+        }
+    }
+    Asset asset = (Asset) { .item.texture = t, .name = name, .type = TEXTURE }; 
+    addAsset(assets, asset);
+    return t;
 }
 
 void* removeAsset(Assets* assets, const char* name){
     for(int i =0; i < assets->count; i++){
-        if(asset_name(assets->asset_textures[i]) == name){
-            _dropAsset(&assets->asset_textures[i]);
+        if(asset_name(assets->items[i]) == name){
+            _dropAsset(&assets->items[i]);
             for(int j = i; j < assets->count - 1; j++){
-                assets->asset_textures[j] = assets->asset_textures[j + 1];
+                assets->items[j] = assets->items[j + 1];
             }
             assets->count--;
         }
     }
 }
+
 static void _dropAsset(Asset* asset){
     switch(asset_type_ptr(asset)){
         case TEXTURE:
-            UnloadTexture(*(Texture2D*)(asset->ptr));
+        case TEXTURE_IMAGE:
+            UnloadTexture((Texture2D)(asset->item.texture));
+            break;
+        case IMAGE:
+            UnloadImage((Image)(asset->item.image));
             break;
         default:
             break;
@@ -51,8 +88,8 @@ static void _dropAsset(Asset* asset){
 
 void unloadAssets(Assets* assets){
     for(int i = 0; i < assets->count; i++){
-        _dropAsset(&assets->asset_textures[i]);
+        _dropAsset(&assets->items[i]);
     }
-    free(assets->asset_textures);
+    free(assets->items);
 }
 

@@ -27,6 +27,10 @@ void executeRightClick(){
 
 void initGame(Game* game, Assets* assets){
     initAssets(assets);
+
+    game->status = PAUSED;
+    game->timer = 0.0;
+    game->maxFlags = 0;
     game->assets = assets;
     game->status = PAUSED;
 }
@@ -71,21 +75,7 @@ int main() {
     Assets assets;
 
     initGame(&game, &assets);
-
-    Image image = LoadImage("assets/flag.png");
-    Image smile_image = LoadImage("assets/smile.png");
-
-    Texture2D flag_texture = LoadTextureFromImage(image);
-    void* ptr = (void*)&flag_texture;
-    Asset asset = {.name = "flag", .ptr = ptr, .type = TEXTURE};
-
-    
-    addAsset(game.assets, asset);
-
-     //smile = LoadTextureFromImage(smile_image);
-
-    UnloadImage(image);
-    UnloadImage(smile_image);
+    assets_image(&assets, "assets/flag.png");
     create_grid(&game);
     SetTargetFPS(60);
 
@@ -250,13 +240,12 @@ void draw_grid(Game* game){
                 float centerX = (game->grid[i][j].rec.x + game->grid[i][j].rec.width) - game->grid[i][j].rec.width / 2;
                 float centerY = (game->grid[i][j].rec.y + game->grid[i][j].rec.height) - game->grid[i][j].rec.height / 2;
                 // Calculate position to start drawing the flag
-                // so that it is centered in the cell
-                Texture2D flag = *(Texture2D*)getAsset(game->assets, "flag")->ptr;
-                float flagX = centerX - (float)flag.width / 2;
-                float flagY = centerY - (float)flag.height / 2;
+                Texture flag_tex = assets_tex_from_img(game->assets, "./assets/flag.png");
+                float flagX = centerX - (float)flag_tex.width / 2;
+                float flagY = centerY - (float)flag_tex.height / 2;
 
                 DrawRectangleRec(game->grid[i][j].rec, Fade(BLUE, 0.3f));
-                DrawTexture(flag, flagX, flagY, WHITE);
+                DrawTexture(flag_tex, flagX, flagY, WHITE);
             }else if(game->grid[i][j].neutralized) {
                 DrawRectangleRec(game->grid[i][j].rec, Fade(RED, 0.3f));
                 //DrawRectangleRec(game->grid[i][j].rec, DARKGRAY);

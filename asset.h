@@ -1,39 +1,47 @@
 #ifndef ASSET_H
 #define ASSET_H
+#include "raylib.h"
+
 
 typedef enum AssetType {
+    IMAGE, 
     TEXTURE,
-    SOUND,
-    MUSIC,
-    FONT,
+    TEXTURE_IMAGE,
 } AssetType;
 
+typedef union AssetData {
+    Image image;
+    Texture2D texture;
+} AssetData;
 
 typedef struct Asset {
-    void* ptr;
+    AssetData item;
     const char* name;
     AssetType type;
 } Asset;
 
+
 typedef struct Assets {
-    Asset* asset_textures;
+    Asset* items;
     int count;
     int capacity;
 } Assets;
 
 
+
 #define asset_name(asset) (asset.name) 
-#define asset_ptr(asset, type) *(type*)(asset.ptr)
 #define asset_type(asset) (asset.type)
 
+#define add_asset(assets, name, type, ptr) addAsset(assets, (Asset){ptr, name, type}
 #define asset_get(assets, name, type) asset_ptr((*getAsset(assets, "flag")), Texture2D);
 
 #define asset_type_ptr(asset) (asset->type)
 
 
+Texture assets_tex_from_img(Assets* assets, const char* name);
+Image assets_image(Assets* assets, const char* name);
+Texture assets_texture(Assets* assets, const char* name);
 void initAssets(Assets* assets);
-void addAsset(Assets* assets, Asset asset);
-Asset* getAsset(Assets* assets, const char* name);
 void* removeAsset(Assets* assets, const char* name);
 static void _dropAsset(Asset* asset);
 void unloadAssets(Assets* assets);

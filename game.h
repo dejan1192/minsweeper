@@ -58,6 +58,7 @@ typedef struct {
 
 void initGame(Game* game, Assets* assets);
 
+int check_surrounding(Game* game, int i, int j);
 void draw_grid(Game* game);
 void handle_events(Game* game);
 void create_grid(Game* game);
