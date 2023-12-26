@@ -156,7 +156,6 @@ void handle_events(Game* game) {
                 return;
             }
             if( game->grid[r][c].active == false) {
-                TraceLog(LOG_INFO,"ROW: %d | COL: %d \n", r, c);
                 game->grid[r][c].active = true;;
             }
         }
@@ -179,7 +178,6 @@ void handle_events(Game* game) {
         }else{
             game->maxFlags++;
         }
-        TraceLog(LOG_INFO,"Max Flags: %d \n", game->maxFlags);
     }
 }
 
