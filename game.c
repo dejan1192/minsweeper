@@ -109,6 +109,9 @@ int main() {
             case PLAY:
                 handle_events(&game);
                 break;
+            case PAUSED:
+                handle_events(&game);
+                break;
             case WON:
                 DrawRectangle(0, 0, SCREEN_W, SCREEN_H, Fade(BLACK, 0.8f));
                 DrawText(wonText, SCREEN_W / 2 - MeasureText(wonText,20) /2, SCREEN_H  /2- MeasureText(wonText,20)/2, 20, LIGHTGRAY);
@@ -248,6 +251,7 @@ void draw_grid(Game* game){
                 float centerY = (game->grid[i][j].rec.y + game->grid[i][j].rec.height) - game->grid[i][j].rec.height / 2;
                 // Calculate position to start drawing the flag
                 // so that it is centered in the cell
+                Texture2D flag = *(Texture2D*)getAsset(game->assets, "flag")->ptr;
                 float flagX = centerX - (float)flag.width / 2;
                 float flagY = centerY - (float)flag.height / 2;
 
@@ -279,6 +283,7 @@ void reset(Game* game){
     create_grid(game);
 }
 void create_grid(Game* game){
+
     int num_of_mines = ROWS * COLS * ((float)MINE_PERCENT / 100.0f); 
 
     for (int i = 0; i < ROWS; i ++) {
