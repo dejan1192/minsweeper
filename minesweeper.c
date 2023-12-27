@@ -22,6 +22,7 @@ int main() {
     char* lostText = "You Lost, Press R to Restart";
     char* wonText = "You Won! Press R to Restart";
 
+
     CommandFunction leftClick = executeLeftClick;
     CommandFunction rightClick = executeRightClick;
 
@@ -34,6 +35,7 @@ int main() {
         draw_grid(&game);
         switch(game.status){
             case PLAY:
+                game.timer += GetFrameTime();
                 handle_events(&game);
                 break;
             case PAUSED:
@@ -48,7 +50,7 @@ int main() {
                 break;
             case LOST:
                 DrawRectangle(0, 0, SCREEN_W, HEADER_SIZE + SCREEN_H, Fade(BLACK, 0.8f));
-                int fontSize = RECT_SIZE/1.3;
+                int fontSize = RECT_SIZE/1.4;
                 int textWidth = MeasureText(lostText, fontSize);
 
                 DrawTextB(lostText, (float)SCREEN_W / 2 - ((float)textWidth / 2 - 50), (float)SCREEN_H / 2 - ((float)fontSize / 2.0f), fontSize, LIGHTGRAY);

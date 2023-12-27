@@ -27,7 +27,7 @@ void initGame(Game* game, Assets* assets){
     initAssets(assets);
 
     game->status = PAUSED;
-    game->timer = 0.0;
+    game->timer = 0.0f;
     game->maxFlags = 0;
     game->assets = assets;
     game->status = PAUSED;
@@ -135,12 +135,18 @@ void draw_grid(Game* game){
     int cols = COLS;
     bool won = true;
 
+    int margin = 15;
     int font_size = RECT_SIZE * 0.7f;
+    const char* time = TextFormat("Time: %d", (int)game->timer);
     const char* flagText = TextFormat("Flags: ", game->maxFlags);
     const char* flagNum = TextFormat("%d", game->maxFlags);
 
-    DrawTextB(flagText, 10,  SCREEN_H + 15, font_size, BLACK);
-    DrawTextB(flagNum, 10 + MeasureText(flagText, font_size), SCREEN_H +15, font_size, RED);
+    int flagTextLen = MeasureText(flagText, font_size);
+    int flagNumLen = MeasureText(flagNum, font_size);
+
+    DrawTextB(flagText, margin,  SCREEN_H + margin, font_size, BLACK);
+    DrawTextB(flagNum,flagTextLen , SCREEN_H +margin, font_size, RED);
+    DrawTextB(time, flagTextLen + flagNumLen + margin,  SCREEN_H + margin, font_size, BLACK);
 
     for (int i = 0; i < ROWS; i ++) {
         for (int j = 0; j <  COLS; j ++) {
