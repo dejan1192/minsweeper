@@ -5,8 +5,6 @@
 #include "raylib.h"
 #include "font.h"
 
-#define MAX_ASSETS 50
-
 Font myfont;
 
 int main() {
@@ -42,15 +40,22 @@ int main() {
                 handle_events(&game);
                 break;
             case WON:
-                DrawRectangle(0, 0, SCREEN_W, SCREEN_H, Fade(BLACK, 0.8f));
-                DrawText(wonText, SCREEN_W / 2 - MeasureText(wonText,20) /2, SCREEN_H  /2- MeasureText(wonText,20)/2, 20, LIGHTGRAY);
+                DrawRectangle(0, 0, SCREEN_W, HEADER_SIZE + SCREEN_H, Fade(BLACK, 0.8f));
+                DrawTextB(wonText, SCREEN_W / 2 - MeasureText(wonText,RECT_SIZE) /2, SCREEN_H  /2- MeasureText(wonText,RECT_SIZE)/2, RECT_SIZE, LIGHTGRAY);
                 if(IsKeyPressed(KEY_R)) {
                     reset(&game);
                 }
                 break;
             case LOST:
-                DrawRectangle(0, 0, SCREEN_W, SCREEN_H, Fade(BLACK, 0.8f));
-                DrawText(lostText, SCREEN_W / 2 - MeasureText(lostText,20) /2, SCREEN_H  /2- MeasureText(lostText,20)/2, 20, LIGHTGRAY);
+                DrawRectangle(0, 0, SCREEN_W, HEADER_SIZE + SCREEN_H, Fade(BLACK, 0.8f));
+                int fontSize = RECT_SIZE/1.3;
+                int textWidth = MeasureText(lostText, fontSize);
+
+                DrawTextB(lostText, (float)SCREEN_W / 2 - ((float)textWidth / 2 - 50), (float)SCREEN_H / 2 - ((float)fontSize / 2.0f), fontSize, LIGHTGRAY);
+                Texture2D img = assets_tex_from_img(&assets, "./assets/lost.png");
+                float imgScale = 0.25;
+                int imgSize = img.width * imgScale;
+                DrawTextureEx(img, (Vector2){(float)SCREEN_W / 2.0 - (float)imgSize/2, 150}, 0, imgScale, WHITE);
                 if(IsKeyPressed(KEY_R)) {
                     reset(&game);
                 }
