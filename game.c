@@ -4,6 +4,7 @@
 #include "math.h"
 #include "asset.h"
 #include "game.h"
+#include "font.h"
 
 #define COLOR 0x7497a8
 
@@ -14,9 +15,6 @@ int g = (COLOR >> 8) & 0xFF;
 // extract the blue component
 // and then  bitwise AND with 0xFF to get the blue component
 int b = COLOR & 0xFF;
-
-
-Texture2D smile;
 
 void executeLeftClick(){
     TraceLog(LOG_INFO,"Left Click \n");
@@ -33,6 +31,8 @@ void initGame(Game* game, Assets* assets){
     game->maxFlags = 0;
     game->assets = assets;
     game->status = PAUSED;
+
+    create_grid(game);
 }
 
 void flood_fill(Game* game, int r, int c, int curr_size){
@@ -65,71 +65,6 @@ void flood_fill(Game* game, int r, int c, int curr_size){
     flood_fill(game, r - 1, c, curr_size);
 }
 
-int main() {
-
-
-    InitWindow(SCREEN_W,HEADER_SIZE+ SCREEN_H, "Minesweeper V01");
-
-
-    Game game;
-    Assets assets;
-
-    initGame(&game, &assets);
-    assets_image(&assets, "assets/flag.png");
-    create_grid(&game);
-    SetTargetFPS(60);
-
-    char* lostText = "You Lost, Press R to Restart";
-    char* wonText = "You Won! Press R to Restart";
-
-    CommandFunction leftClick = executeLeftClick;
-    CommandFunction rightClick = executeRightClick;
-
-    game.framesCounter = 0;
-    game.timer = 0.0; // Initialize the timer
-
-    while(!WindowShouldClose()) {
-        BeginDrawing();
-        ClearBackground(RAYWHITE);
-        Vector2 vec;
-
-
-        draw_grid(&game);
-        switch(game.status){
-            case PLAY:
-                handle_events(&game);
-                break;
-            case PAUSED:
-                handle_events(&game);
-                break;
-            case WON:
-                DrawRectangle(0, 0, SCREEN_W, SCREEN_H, Fade(BLACK, 0.8f));
-                DrawText(wonText, SCREEN_W / 2 - MeasureText(wonText,20) /2, SCREEN_H  /2- MeasureText(wonText,20)/2, 20, LIGHTGRAY);
-                if(IsKeyPressed(KEY_R)) {
-                    reset(&game);
-                }
-                break;
-            case LOST:
-                DrawRectangle(0, 0, SCREEN_W, SCREEN_H, Fade(BLACK, 0.8f));
-                DrawText(lostText, SCREEN_W / 2 - MeasureText(lostText,20) /2, SCREEN_H  /2- MeasureText(lostText,20)/2, 20, LIGHTGRAY);
-                if(IsKeyPressed(KEY_R)) {
-                    reset(&game);
-                }
-                break;
-        }
-        EndDrawing();
-    }
-    unloadAssets(game.assets);
-
-    return 0;
-}
-
-typedef struct {
-    int row;
-    int col;
-    int sizeX;
-    int sizeY;
-} MouseGridPosition;
 
 MouseGridPosition get_mouse_position(Game* game){
 
@@ -204,8 +139,8 @@ void draw_grid(Game* game){
     const char* flagText = TextFormat("Flags: ", game->maxFlags);
     const char* flagNum = TextFormat("%d", game->maxFlags);
 
-    DrawText(flagText, 10,  SCREEN_H + 15, font_size, BLACK);
-    DrawText(flagNum, 10 + MeasureText(flagText, font_size), SCREEN_H +15, font_size, RED);
+    DrawTextB(flagText, 10,  SCREEN_H + 15, font_size, BLACK);
+    DrawTextB(flagNum, 10 + MeasureText(flagText, font_size), SCREEN_H +15, font_size, RED);
 
     for (int i = 0; i < ROWS; i ++) {
         for (int j = 0; j <  COLS; j ++) {
@@ -226,19 +161,21 @@ void draw_grid(Game* game){
                     float centerX = (game->grid[i][j].rec.x + game->grid[i][j].rec.width) - game->grid[i][j].rec.width / 2;
                     float centerY = (game->grid[i][j].rec.y + game->grid[i][j].rec.height) - game->grid[i][j].rec.height / 2;
 
+                    Color color[] = {GREEN, SKYBLUE, YELLOW, ORANGE,MAGENTA, RED};
                     if(num_of_mines > 0){
+                        int numCol = num_of_mines % 5;
                         int textSize = CELL_W/2;
                         const char* text = TextFormat("%d", num_of_mines);
                         int textX = centerX - (MeasureText(text, textSize) / 2);
                         int textY = centerY - (textSize / 2);
-                        DrawText(text, textX, textY, textSize, BLACK);
+                        DrawTextB(text, textX, textY, textSize, color[numCol]);
                     }
                 }
             }else if(game->grid[i][j].flagged) {
                 float centerX = (game->grid[i][j].rec.x + game->grid[i][j].rec.width) - game->grid[i][j].rec.width / 2;
                 float centerY = (game->grid[i][j].rec.y + game->grid[i][j].rec.height) - game->grid[i][j].rec.height / 2;
                 // Calculate position to start drawing the flag
-                Texture flag_tex = assets_tex_from_img(game->assets, "./assets/flag.png");
+                Texture flag_tex = assets_tex_from_img(game->assets, getAssetPath("flag"));
                 float flagX = centerX - (float)flag_tex.width / 2;
                 float flagY = centerY - (float)flag_tex.height / 2;
 

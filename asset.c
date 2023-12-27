@@ -3,10 +3,23 @@
 #include "raylib.h"
 #include "asset.h"
 
+AssetPath paths[] = {
+    {"assets/flag.png", "flag"},
+};
+
 void initAssets(Assets* assets){
     assets->items = NULL;
     assets->count = 0;
     assets->capacity = 0;
+}
+
+const char* getAssetPath(const char* name) {
+    for (int i = 0; i < sizeof(paths) / sizeof(AssetPath); i++) {
+        if (strcmp(paths[i].name, name) == 0) {
+            return paths[i].path;
+        }
+    }
+    return NULL;
 }
 
 static void addAsset(Assets* assets, Asset asset){

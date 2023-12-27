@@ -1,6 +1,17 @@
 #ifndef ASSET_H
 #define ASSET_H
 #include "raylib.h"
+#include "stdlib.h"
+#include "string.h"
+
+typedef struct AssetPath {
+    const char* path;
+    const char* name;
+} AssetPath;
+
+
+
+const char* getAssetPath(const char* name);
 
 
 typedef enum AssetType {
@@ -26,7 +37,6 @@ typedef struct Assets {
     int count;
     int capacity;
 } Assets;
-
 
 
 #define asset_name(asset) (asset.name) 

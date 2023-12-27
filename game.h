@@ -18,6 +18,12 @@
 #define NUM_FRAMES_PER_LINE 5
 #define NUM_LINES 5
 
+typedef struct {
+    int row;
+    int col;
+    int sizeX;
+    int sizeY;
+} MouseGridPosition;
 
 typedef enum GameStatus {
     PLAY,
@@ -50,10 +56,6 @@ typedef struct {
     Assets* assets;
     double timer;
     int maxFlags;
-    int currentFrame;
-    int framesCounter;
-    float frameWidth;
-    float frameHeight;
 } Game;
 
 void initGame(Game* game, Assets* assets);
@@ -62,10 +64,10 @@ int check_surrounding(Game* game, int i, int j);
 void draw_grid(Game* game);
 void handle_events(Game* game);
 void create_grid(Game* game);
-void selection(Game* game, int i, int j);
-void neutralize(Game* game, int i, int j);
 void reset(Game* game);
 
 
+void executeLeftClick();
+void executeRightClick();
 
 #endif // GAME_H
