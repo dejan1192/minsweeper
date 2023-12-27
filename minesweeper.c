@@ -16,11 +16,6 @@ int main() {
     Game game;
     Assets assets;
     myfont = LoadFont("assets/fonts/Roboto-Bold.ttf");
-
-    // AssetPath paths[MAX_ASSETS];
-
-    // load_assets_from_file(&paths);
-
     initGame(&game, &assets);
     //Loads asset if not already loaded
     assets_image(&assets, getAssetPath("flag"));
