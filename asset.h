@@ -9,10 +9,7 @@ typedef struct AssetPath {
     const char* name;
 } AssetPath;
 
-
-
 const char* getAssetPath(const char* name);
-
 
 typedef enum AssetType {
     IMAGE, 

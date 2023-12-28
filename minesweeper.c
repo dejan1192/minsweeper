@@ -18,7 +18,7 @@ int main() {
     myfont = LoadFont("assets/fonts/Roboto-Bold.ttf");
     initGame(&game, &assets);
 
-    // Preload assets
+    // Preload all assets
     {
         assets_tex_from_img(game.assets, getAssetPath("flag"));
         assets_tex_from_img(game.assets, "./assets/lost.png");

@@ -173,8 +173,8 @@ void draw_grid(Game* game){
                         int numCol = num_of_mines % 5;
                         int textSize = CELL_H/2;
                         const char* text = TextFormat("%d", num_of_mines);
-                        int textX = cell->centerX - (MeasureText(text, textSize) / 2);
-                        int textY = cell->centerY - (textSize / 2);
+                        int textX = cell->centerX - ((float)MeasureText(text, textSize) / 2);
+                        int textY = cell->centerY - ((float)textSize / 2);
                         DrawTextB(text, textX, textY, textSize, color[numCol]);
                     }
                 }
@@ -232,10 +232,12 @@ void reset(Game* game){
     game->flags = 0;
     create_grid(game);
 }
+// This function is called once
 void create_grid(Game* game){
 
     int num_of_mines = ROWS * COLS * ((float)MINE_PERCENT / 100.0f); 
 
+    // Generate grid
     for (int i = 0; i < ROWS; i ++) {
         for (int j = 0; j < COLS; j ++) {
             int width = SCREEN_W / COLS;
@@ -255,6 +257,7 @@ void create_grid(Game* game){
         }
     }
 
+    // Place mines at random positions
     int i,j;
     while(num_of_mines > 0){
         i = GetRandomValue(0, ROWS - 1);

@@ -72,6 +72,7 @@ void draw_grid(Game* game);
 void handle_events(Game* game);
 void create_grid(Game* game);
 void reset(Game* game);
+void draw_game_panel(Game* game);
 
 
 void executeLeftClick();

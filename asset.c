@@ -39,9 +39,6 @@ Texture assets_tex_from_img(Assets* assets, const char* name){
             }
         }
     }
-    TraceLog(LOG_INFO, "ASSETS COUNT %d", assets->count);
-    TraceLog(LOG_INFO, "DIDNT FIND - LOADING texture from image %s type %d", name, TEXTURE_IMAGE);
-
     Texture texImg = LoadTextureFromImage(assets_image(assets, name));
     Asset asset = (Asset) { .item.texture = texImg, .name = name, .type = TEXTURE_IMAGE }; 
     addAsset(assets, asset);
