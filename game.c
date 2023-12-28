@@ -28,7 +28,7 @@ void initGame(Game* game, Assets* assets){
 
     game->status = PAUSED;
     game->timer = 0.0f;
-    game->maxFlags = 0;
+    game->flags = 0;
     game->assets = assets;
     game->status = PAUSED;
 
@@ -66,7 +66,7 @@ void flood_fill(Game* game, int r, int c, int curr_size){
 }
 
 
-MouseGridPosition get_mouse_position(Game* game){
+GridPosition get_mouse_position(Game* game){
 
     Vector2 vec2 = GetMousePosition();
     int rw = SCREEN_W / COLS;
@@ -74,7 +74,7 @@ MouseGridPosition get_mouse_position(Game* game){
     int r = floor(vec2.y / rw);
     int c = floor(vec2.x / cl);
 
-    MouseGridPosition gp = {.row = r, .col = c, .sizeX = rw, .sizeY = cl};
+    GridPosition gp = {.row = r, .col = c, .sizeX = rw, .sizeY = cl};
     return gp;
 }
 
@@ -83,7 +83,7 @@ void handle_events(Game* game) {
     if(game->status == PLAY || game->status == PAUSED) {
         if( IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ) {
             game->status = PLAY;
-            MouseGridPosition mgp = get_mouse_position(game);
+            GridPosition mgp = get_mouse_position(game);
             int r = mgp.row;
             int c = mgp.col;
 
@@ -97,21 +97,21 @@ void handle_events(Game* game) {
 
     }
     if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)){
-            MouseGridPosition mgp = get_mouse_position(game);
+            GridPosition mgp = get_mouse_position(game);
 
             int r = mgp.row;
             int c = mgp.col;
            
             if(game->grid[r][c].active == true 
-            || (game->grid[r][c].flagged == false && game->maxFlags <= 0)){
+            || (game->grid[r][c].flagged == false && game->flags <= 0)){
             return;
         }
         game->grid[r][c].flagged = !game->grid[r][c].flagged;
 
         if(game->grid[r][c].flagged){
-            game->maxFlags--;
+            game->flags--;
         }else{
-            game->maxFlags++;
+            game->flags++;
         }
     }
 }
@@ -130,32 +130,36 @@ int check_surrounding(Game* game, int i, int j){
     return num_of_mines;
 }
 
+
+
+Cell* getCell(Game* game, int row, int col){
+    return &game->grid[row][col];
+}
+
+
+
 void draw_grid(Game* game){
     int rows = ROWS;
     int cols = COLS;
     bool won = true;
 
-    int margin = 15;
-    int font_size = RECT_SIZE * 0.7f;
-    const char* time = TextFormat("Time: %d", (int)game->timer);
-    const char* flagText = TextFormat("Flags: ", game->maxFlags);
-    const char* flagNum = TextFormat("%d", game->maxFlags);
-
-    int flagTextLen = MeasureText(flagText, font_size);
-    int flagNumLen = MeasureText(flagNum, font_size);
-
-    DrawTextB(flagText, margin,  SCREEN_H + margin, font_size, BLACK);
-    DrawTextB(flagNum,flagTextLen , SCREEN_H +margin, font_size, RED);
-    DrawTextB(time, flagTextLen + flagNumLen + margin,  SCREEN_H + margin, font_size, BLACK);
+    GridPosition* mineCell = NULL;
 
     for (int i = 0; i < ROWS; i ++) {
         for (int j = 0; j <  COLS; j ++) {
 
+            // Get reference to current cell
+            Cell* cell =  getCell(game, i, j);
+
             if(game->grid[i][j].active) {
                 if(game->grid[i][j].has_mine) {
-                    DrawRectangleRec(game->grid[i][j].rec, RED);
+                    // If field is active nad has a mine, we save its position in mineCell, 
+                    // so we can draw the mine at the end, so it is on top of everything  
+                    mineCell = &(GridPosition){.row = i, .col = j, .sizeX = RECT_SIZE, .sizeY = RECT_SIZE};
                     game->status = LOST;
                 }else{
+
+
                     int num_of_mines = check_surrounding(game, i, j);
                     if(num_of_mines == 0 && game->grid[i][j].active == true ){
                         int revealed = 0;
@@ -164,26 +168,22 @@ void draw_grid(Game* game){
 
                     DrawRectangleRec(game->grid[i][j].rec, ColorFromHSV(r-10,g-10,b-10));
 
-                    float centerX = (game->grid[i][j].rec.x + game->grid[i][j].rec.width) - game->grid[i][j].rec.width / 2;
-                    float centerY = (game->grid[i][j].rec.y + game->grid[i][j].rec.height) - game->grid[i][j].rec.height / 2;
-
                     Color color[] = {GREEN, SKYBLUE, YELLOW, ORANGE,MAGENTA, RED};
                     if(num_of_mines > 0){
                         int numCol = num_of_mines % 5;
-                        int textSize = CELL_W/2;
+                        int textSize = CELL_H/2;
                         const char* text = TextFormat("%d", num_of_mines);
-                        int textX = centerX - (MeasureText(text, textSize) / 2);
-                        int textY = centerY - (textSize / 2);
+                        int textX = cell->centerX - (MeasureText(text, textSize) / 2);
+                        int textY = cell->centerY - (textSize / 2);
                         DrawTextB(text, textX, textY, textSize, color[numCol]);
                     }
                 }
             }else if(game->grid[i][j].flagged) {
-                float centerX = (game->grid[i][j].rec.x + game->grid[i][j].rec.width) - game->grid[i][j].rec.width / 2;
-                float centerY = (game->grid[i][j].rec.y + game->grid[i][j].rec.height) - game->grid[i][j].rec.height / 2;
                 // Calculate position to start drawing the flag
                 Texture flag_tex = assets_tex_from_img(game->assets, getAssetPath("flag"));
-                float flagX = centerX - (float)flag_tex.width / 2;
-                float flagY = centerY - (float)flag_tex.height / 2;
+                
+                float flagX = cell->centerX - (float)flag_tex.width / 2;
+                float flagY = cell->centerY - (float)flag_tex.height / 2;
 
                 DrawRectangleRec(game->grid[i][j].rec, Fade(BLUE, 0.3f));
                 DrawTexture(flag_tex, flagX, flagY, WHITE);
@@ -193,14 +193,34 @@ void draw_grid(Game* game){
             }else if(game->grid[i][j].hover) {
                 DrawRectangleRec(game->grid[i][j].rec, Fade(GREEN, 0.3f));
             } else{
-                // Draw the actual cell
-                //DrawRectangleRec(game->grid[i][j].rec, GetCellColor(game->grid[i][j]));
+                // IF at least one cell is not active, the game is not won
                 won = false;
             }
-
+            // we draw the grid
             DrawRectangleLines(game->grid[i][j].rec.x, game->grid[i][j].rec.y, RECT_SIZE, RECT_SIZE, LIGHTGRAY);
             game->grid[i][j].hover = false;
         }
+    }
+    if(mineCell != NULL){
+   
+        // Get reference to mine cell
+        Cell* cell = getCell(game, mineCell->row, mineCell->col);
+
+        // Load mine texture and calculate position to start drawing the mine
+        Texture mine_tex = assets_tex_from_img(game->assets, "./assets/mine.png");
+        float mineScale = 0.02;
+        float mineX = cell->centerX - (float)mine_tex.width*mineScale / 2;
+        float mineY = cell->centerY - (float)mine_tex.height*mineScale / 2;
+
+        // We calcualte position to start drawing the explosion
+        Texture explosion_tex = assets_tex_from_img(game->assets, "./assets/explosion.png");
+        float explosionScale = 0.2;
+        float explosionX = cell->centerX - (float)explosion_tex.width*explosionScale / 2;
+        float explosionY = cell->centerY - (float)explosion_tex.height*explosionScale / 2;
+
+        // We draw the mine and the explosion
+        DrawTextureEx(explosion_tex, (Vector2){explosionX, explosionY}, 0, explosionScale, WHITE);
+        DrawTextureEx(mine_tex, (Vector2){mineX, mineY}, 0, mineScale, WHITE);
     }
     if(won) {
         game->status = WON;
@@ -209,7 +229,7 @@ void draw_grid(Game* game){
 void reset(Game* game){
     game->status = PAUSED;
     game->timer = 0.0;
-    game->maxFlags = 0;
+    game->flags = 0;
     create_grid(game);
 }
 void create_grid(Game* game){
@@ -222,12 +242,14 @@ void create_grid(Game* game){
             int height = SCREEN_H / ROWS;
             Rectangle rect = {.x = j * RECT_SIZE, .y = i* RECT_SIZE, .width = width, .height = height};
 
-            GameRec gr = {
+            Cell gr = {
                 .rec = rect,
                 .neutralized = false,
                 .active = false, 
                 .flagged = false,
-                .visited = false
+                .visited = false,
+                .centerX = rect.x + rect.width / 2,
+                .centerY = rect.y + rect.height / 2
             };
             game->grid[i][j] = gr;
         }
@@ -240,9 +262,9 @@ void create_grid(Game* game){
 
         if(game->grid[i][j].has_mine == false){
             game->grid[i][j].has_mine = true;
-            game->maxFlags++;
+            game->flags++;
             // Debugging
-            //game->grid[i][j].neutralized = true;
+            // game->grid[i][j].neutralized = true;
             num_of_mines--;
         }
     }

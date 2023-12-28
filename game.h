@@ -4,8 +4,8 @@
 #include "raylib.h"
 #include "asset.h"
 
-#define ROWS  20
-#define COLS  25
+#define ROWS  15
+#define COLS  20
 #define RECT_SIZE 30
 #define HEADER_SIZE 50
 #define SCREEN_W (RECT_SIZE * COLS)
@@ -23,7 +23,7 @@ typedef struct {
     int col;
     int sizeX;
     int sizeY;
-} MouseGridPosition;
+} GridPosition;
 
 typedef enum GameStatus {
     PLAY,
@@ -32,6 +32,11 @@ typedef enum GameStatus {
     LOST,
 } GameStatus;
 
+typedef struct CellCenter {
+    float x;
+    float y;
+} CellCenter;
+
 typedef void (*CommandFunction)(void);
 
 typedef struct Command {
@@ -39,7 +44,7 @@ typedef struct Command {
 } Command;
 
 
-typedef struct GameRec {
+typedef struct Cell {
     Rectangle rec;
     bool has_mine;
     bool flagged;
@@ -48,14 +53,16 @@ typedef struct GameRec {
     bool hover;
     bool active;
     bool visited;
-} GameRec;
+    float centerX;
+    float centerY;
+} Cell;
 
 typedef struct {
     GameStatus status;
-    GameRec grid[ROWS][COLS];
+    Cell grid[ROWS][COLS];
     Assets* assets;
     double timer;
-    int maxFlags;
+    int flags;
 } Game;
 
 void initGame(Game* game, Assets* assets);
