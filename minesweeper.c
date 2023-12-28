@@ -21,6 +21,7 @@ int main() {
     // Preload assets
     {
         assets_tex_from_img(game.assets, getAssetPath("flag"));
+        assets_tex_from_img(game.assets, "./assets/lost.png");
         assets_tex_from_img(game.assets, "./assets/mine.png");
         assets_tex_from_img(game.assets, "./assets/explosion.png");
     }

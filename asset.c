@@ -31,13 +31,18 @@ static void addAsset(Assets* assets, Asset asset){
 }
 
 Texture assets_tex_from_img(Assets* assets, const char* name){
+    // TraceLog(LOG_INFO, "ASSETS COUNT %d", assets->count);
     for(int i = 0; i < assets->count; i++){
         if(assets->items[i].type == TEXTURE_IMAGE){
+            // TraceLog(LOG_INFO, "SEARCHING FOR texture from image %s type %d", name, TEXTURE_IMAGE);
             if(assets->items[i].name == name){
+
                 return assets->items[i].item.texture;
             }
         }
     }
+    TraceLog(LOG_INFO, "ASSETS COUNT %d", assets->count);
+    TraceLog(LOG_INFO, "DIDNT FIND - LOADING texture from image %s type %d", name, TEXTURE_IMAGE);
 
     Texture texImg = LoadTextureFromImage(assets_image(assets, name));
     Asset asset = (Asset) { .item.texture = texImg, .name = name, .type = TEXTURE_IMAGE }; 
@@ -46,7 +51,6 @@ Texture assets_tex_from_img(Assets* assets, const char* name){
 }
 
 Image assets_image(Assets* assets, const char* name){
-    Image img = LoadImage(name);
     for(int i = 0; i < assets->count; i++){
         if(assets->items[i].type == IMAGE){
             if(assets->items[i].name == name){
@@ -54,13 +58,13 @@ Image assets_image(Assets* assets, const char* name){
             }
         }
     }
+    Image img = LoadImage(name);
     Asset asset = (Asset) { .item.image = img, .name = name, .type = IMAGE }; 
     addAsset(assets, asset);
     return img;
 }
 
 Texture assets_texture(Assets* assets, const char* name){
-    Texture t = LoadTexture(name);
     for(int i = 0; i < assets->count; i++){
         if(assets->items[i].type == TEXTURE){
             if(assets->items[i].name == name){
@@ -68,6 +72,7 @@ Texture assets_texture(Assets* assets, const char* name){
             }
         }
     }
+    Texture t = LoadTexture(name);
     Asset asset = (Asset) { .item.texture = t, .name = name, .type = TEXTURE }; 
     addAsset(assets, asset);
     return t;
