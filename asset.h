@@ -52,7 +52,7 @@ Texture assets_tex_from_img(Assets* assets, const char* name);
 Image assets_image(Assets* assets, const char* name);
 Texture assets_texture(Assets* assets, const char* name);
 void initAssets(Assets* assets);
-void* removeAsset(Assets* assets, const char* name);
+void removeAsset(Assets* assets, const char* name);
 static void _dropAsset(Asset* asset);
 void unloadAssets(Assets* assets);
 

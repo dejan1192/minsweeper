@@ -97,12 +97,12 @@ void handle_events(Game* game) {
 
     }
     if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)){
-            GridPosition mgp = get_mouse_position(game);
+        GridPosition mgp = get_mouse_position(game);
 
-            int r = mgp.row;
-            int c = mgp.col;
-           
-            if(game->grid[r][c].active == true 
+        int r = mgp.row;
+        int c = mgp.col;
+
+        if(game->grid[r][c].active == true 
             || (game->grid[r][c].flagged == false && game->flags <= 0)){
             return;
         }

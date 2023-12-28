@@ -31,11 +31,9 @@ static void addAsset(Assets* assets, Asset asset){
 }
 
 Texture assets_tex_from_img(Assets* assets, const char* name){
-    // TraceLog(LOG_INFO, "ASSETS COUNT %d", assets->count);
     for(int i = 0; i < assets->count; i++){
         if(assets->items[i].type == TEXTURE_IMAGE){
-            // TraceLog(LOG_INFO, "SEARCHING FOR texture from image %s type %d", name, TEXTURE_IMAGE);
-            if(assets->items[i].name == name){
+            if(strcmp(assets->items[i].name, name) == 0){
 
                 return assets->items[i].item.texture;
             }
@@ -78,7 +76,7 @@ Texture assets_texture(Assets* assets, const char* name){
     return t;
 }
 
-void* removeAsset(Assets* assets, const char* name){
+void removeAsset(Assets* assets, const char* name){
     for(int i =0; i < assets->count; i++){
         if(asset_name(assets->items[i]) == name){
             _dropAsset(&assets->items[i]);

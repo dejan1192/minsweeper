@@ -3,4 +3,4 @@ if [ ! -L $(pwd)/lib/libraylib.so.450 ]; then
 fi
 rm ./bin/*
 mkdir -p bin 
-gcc -o ./bin/minesweeper minesweeper.c game.c font.c asset.c -L./lib/  -I./include -lm -Wl,-rpath=./lib/ -lraylib
+gcc -Wall -Wextra -o ./bin/minesweeper minesweeper.c game.c font.c asset.c -L./lib/  -I./include -lm -Wl,-rpath=./lib/ -lraylib
