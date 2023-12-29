@@ -26,11 +26,10 @@ void executeRightClick(){
 void initGame(Game* game, Assets* assets){
     initAssets(assets);
 
-    game->status = PAUSED;
     game->timer = 0.0f;
     game->flags = 0;
     game->assets = assets;
-    game->status = PAUSED;
+    game->status = MENU;
 
     create_grid(game);
 }
@@ -143,6 +142,10 @@ void draw_grid(Game* game){
     int cols = COLS;
     bool won = true;
 
+    DrawRectangle(0, 0, SCREEN_W, SCREEN_H, Fade(DARKGRAY, 0.9f));
+
+   
+
     GridPosition* mineCell = NULL;
 
     for (int i = 0; i < ROWS; i ++) {
@@ -150,6 +153,13 @@ void draw_grid(Game* game){
 
             // Get reference to current cell
             Cell* cell =  getCell(game, i, j);
+
+            // Adds highlights to cells
+            Rectangle rec = cell->rec;
+            int offset = 3;
+            rec.width -= offset;
+            rec.height -= offset;
+            DrawRectangleRec(rec, Fade(WHITE, 0.87f));
 
             if(game->grid[i][j].active) {
                 if(game->grid[i][j].has_mine) {
@@ -166,9 +176,12 @@ void draw_grid(Game* game){
                         flood_fill(game, i, j, revealed);
                     }
 
-                    DrawRectangleRec(game->grid[i][j].rec, ColorFromHSV(r-10,g-10,b-10));
+                    // DrawRectangleRec(game->grid[i][j].rec, ColorFromHSV(r-10,g-10,b-10));
+                    // DrawRectangleRec(game->grid[i][j].rec, ColorFromHSV(r-250,g-250,b-250));
+                    DrawRectangleRec(game->grid[i][j].rec, WHITE);
 
-                    Color color[] = {GREEN, SKYBLUE, YELLOW, ORANGE,MAGENTA, RED};
+
+                    Color color[] = {GREEN, BLUE, ORANGE,MAGENTA, RED};
                     if(num_of_mines > 0){
                         int numCol = num_of_mines % 5;
                         int textSize = CELL_H/2;
@@ -197,7 +210,11 @@ void draw_grid(Game* game){
                 won = false;
             }
             // we draw the grid
-            DrawRectangleLines(game->grid[i][j].rec.x, game->grid[i][j].rec.y, RECT_SIZE, RECT_SIZE, LIGHTGRAY);
+
+// if(i == 0 && j == 0){
+
+// }
+            DrawRectangleLines(game->grid[i][j].rec.x, game->grid[i][j].rec.y, RECT_SIZE, RECT_SIZE, RAYWHITE);
             game->grid[i][j].hover = false;
         }
     }

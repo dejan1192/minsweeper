@@ -27,6 +27,7 @@ typedef struct {
 
 typedef enum GameStatus {
     PLAY,
+    MENU,
     PAUSED,
     WON,
     LOST,

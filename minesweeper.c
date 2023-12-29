@@ -24,6 +24,10 @@ int main() {
         assets_tex_from_img(game.assets, "./assets/lost.png");
         assets_tex_from_img(game.assets, "./assets/mine.png");
         assets_tex_from_img(game.assets, "./assets/explosion.png");
+
+        // Buttons
+        assets_tex_from_img(game.assets, "./assets/button/UI_Flat_Button_Large_Press01a1.png");
+        assets_tex_from_img(game.assets, "./assets/button/UI_Flat_Button_Large_Press01a2.png");
     }
 
     SetTargetFPS(60);
@@ -34,6 +38,7 @@ int main() {
     CommandFunction leftClick = executeLeftClick;
     CommandFunction rightClick = executeRightClick;
 
+    int fontSize = RECT_SIZE * 0.9f;
 
     while(!WindowShouldClose()) {
         BeginDrawing();
@@ -43,6 +48,27 @@ int main() {
         draw_game_panel(&game);
         draw_grid(&game);
         switch(game.status){
+            case MENU: 
+                Texture2D buttonTex =  assets_tex_from_img(game.assets, "./assets/button/UI_Flat_Button_Large_Press_01a1.png");
+
+                int buttonX = SCREEN_W / 2 - buttonTex.width / 2;
+                int buttonY = SCREEN_H / 2;
+                bool isColiding = CheckCollisionPointRec(GetMousePosition(), (Rectangle){buttonX, buttonY, buttonTex.width, buttonTex.height});
+                if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && isColiding){
+                    buttonTex =  assets_tex_from_img(game.assets, "./assets/button/UI_Flat_Button_Large_Press_01a2.png");
+                    buttonX = SCREEN_W / 2 - buttonTex.width / 2;
+                    buttonY = SCREEN_H / 2;
+                }
+                char* playTxt = "Play";
+                char* titleTxt = "Minesweeper";
+                DrawRectangle(0, 0, SCREEN_W, HEADER_SIZE + SCREEN_H, Fade(DARKGRAY, 0.9f));
+                DrawTextB(titleTxt, SCREEN_W / 2 - ( MeasureText(titleTxt, fontSize) / 2 ) + 20, SCREEN_H  /2- MeasureText(titleTxt,fontSize)/2, fontSize, RAYWHITE);
+                if(IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && isColiding){
+                    game.status = PLAY;
+                }
+                DrawTexture(buttonTex, buttonX, buttonY, WHITE);
+                DrawTextB(playTxt, buttonX + (buttonTex.width / 2) - (MeasureText(playTxt,20)/2) , buttonY + 5, 20, BLACK);
+                break;
             case PLAY:
                 game.timer += GetFrameTime();
                 handle_events(&game);
@@ -59,7 +85,6 @@ int main() {
                 break;
             case LOST:
                 DrawRectangle(0, 0, SCREEN_W, HEADER_SIZE + SCREEN_H, Fade(BLACK, 0.8f));
-                int fontSize = RECT_SIZE/1.4;
                 int textWidth = MeasureText(lostText, fontSize);
 
                 DrawTextB(lostText, (float)SCREEN_W / 2 - ((float)textWidth / 2 - 50), (float)SCREEN_H / 2 - ((float)fontSize / 2.0f), fontSize, LIGHTGRAY);
@@ -76,6 +101,7 @@ int main() {
     }
     unloadAssets(game.assets);
     UnloadFont(myfont);
+    CloseWindow();
 
     return 0;
 }
